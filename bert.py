@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from base_bert import BertPreTrainedModel
 from utils import *
-
+import math
 
 class BertSelfAttention(nn.Module):
   def __init__(self, config):
@@ -50,6 +50,13 @@ class BertSelfAttention(nn.Module):
     #   [bs, seq_len, num_attention_heads * attention_head_size = hidden_size].
 
     ### TODO
+    S=torch.matmul(key, torch.transpose(query,3,2))
+    S=S*attention_mask
+    S_n=torch.softmax(S/math.sqrt(key[0,0,0].size()[0]))
+    Weighted_Values=torch.matmul(S_n,value)
+    Weighted_Values=Weighted_Values.transpose(1,2)
+    Weighted_Values=Weighted_Values.contiguous().view
+    Weighted_Values=Weighted_Values.view(key.size()[0],key[0].size()[0],key[0,0].size()[0]*key[0,0,0].size()[0])
     raise NotImplementedError
 
 
