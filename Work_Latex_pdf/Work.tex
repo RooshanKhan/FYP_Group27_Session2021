@@ -1,10 +1,48 @@
 \documentclass{article}
 \usepackage[top=0.1in, bottom=0.5in, left=0.5in, right=0.5in]{geometry}
+\usepackage{listings} % Package for displaying code
+\usepackage{xcolor}  % Package for coloring code
+
+\lstset{ 
+  backgroundcolor=\color{white},   % Background color
+  basicstyle=\ttfamily\footnotesize, % Font style and size
+  frame=single,                   % Frame around the code
+  rulecolor=\color{black},         % Color of the frame
+  breaklines=true,                 % Automatic line breaking
+  captionpos=b,                    % Caption position at the bottom
+}
+
 \begin{document}
 \section{Tasks}
 \subsection{Week 1}
 \subsubsection{Rooshan Khan: Attention Method in bert.py}
-In this method we had to implement Attention method from class BertSelfAttention.
+In this method we had to implement the Attention method from class BertSelfAttention.
 \subsubsection{Abdul Samad: Embed Method in bert.py}
-In this method we had to implement Embed method from class BertSelfAttention.
+In this method, we had to implement the Embed method from class BertSelfAttention.
+\begin{lstlisting}
+def embed(self, input_ids):
+    input_shape = input_ids.size()
+    seq_length = input_shape[1]
+    # Get word embedding from self.word_embedding into input_embeds.
+    inputs_embeds = self.word_embedding
+    print("inputs_embeds")
+\end{lstlisting}
+The input\_ids are used to retrieve word embeddings from self.word\_embedding. These embeddings represent the meaning of each word in the input sequence. We store these embeddings in the variable inputs\_embeds.
+\begin{lstlisting}
+pos_ids = self.position_ids[:, :seq_length]
+pos_embeds = self.pos_embedding
+print("pos_embeds")
+\end{lstlisting}
+To capture the order of words in the sequence, we use positional embeddings. The position IDs (pos\_ids) are sliced to match the input sequence length and used to retrieve the embeddings from self.pos\_embedding, stored in pos\_embeds.
+
+\begin{lstlisting}
+total_embeds = inputs_embeds + pos_embeds + tk_type_embeds
+\end{lstlisting}
+The three types of embeddings (inputs\_embeds, pos\_embeds, tk\_type\_embeds) are added together to form the total embedding representation of the input sequence.
+\begin{lstlisting}
+layer_norm = self.embed_layer_norm(total_embeds)
+embed_output = self.embed_dropout(layer_norm)
+\end{lstlisting}
+The combined embeddings are normalized using self.embed\_layer\_norm. This ensures that the embeddings have a stable mean and variance, which helps with training stability and model performance. Finally, the output is passed through a dropout layer using self.embed\_dropout to regularize the model and prevent overfitting.
 \end{document}
+
