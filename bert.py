@@ -57,8 +57,6 @@ class BertSelfAttention(nn.Module):
     Weighted_Values=Weighted_Values.transpose(1,2)
     Weighted_Values=Weighted_Values.contiguous().view
     Weighted_Values=Weighted_Values.view(key.size()[0],key[0].size()[0],key[0,0].size()[0]*key[0,0,0].size()[0])
-    raise NotImplementedError
-
 
   def forward(self, hidden_states, attention_mask):
     """
