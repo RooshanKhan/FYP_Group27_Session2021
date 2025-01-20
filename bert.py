@@ -55,7 +55,7 @@ class BertSelfAttention(nn.Module):
     S_n=torch.softmax(S/math.sqrt(key[0,0,0].size()[0]))
     Weighted_Values=torch.matmul(S_n,value)
     Weighted_Values=Weighted_Values.transpose(1,2)
-    Weighted_Values=Weighted_Values.contiguous().view
+    Weighted_Values=Weighted_Values.contiguous()
     Weighted_Values=Weighted_Values.view(key.size()[0],key[0].size()[0],key[0,0].size()[0]*key[0,0,0].size()[0])
 
   def forward(self, hidden_states, attention_mask):
