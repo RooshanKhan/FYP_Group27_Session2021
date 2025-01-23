@@ -50,7 +50,7 @@ class BertSelfAttention(nn.Module):
     #   [bs, seq_len, num_attention_heads * attention_head_size = hidden_size].
 
     ### TODO
-    S=torch.matmul(key, torch.transpose(query,3,2))
+    S=torch.matmul(query, torch.transpose(key,3,2))
     S=S*attention_mask
     S_n=torch.softmax(S/math.sqrt(key[0,0,0].size()[0]))
     Weighted_Values=torch.matmul(S_n,value)
