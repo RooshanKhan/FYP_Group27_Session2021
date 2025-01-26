@@ -30,8 +30,17 @@ class AdamW(Optimizer):
         loss = None
         if closure is not None:
             loss = closure()
-
-        for group in self.param_groups:
+        # print(loss)
+        # print(closure)
+        '''Our Comments'''
+        """self.param_groups is a list with only one element that is a dictionary. The coming for loop line acces the only element of the list."""
+        for group in self.param_groups:     # Here group is a dictionary
+            # print("Hello")
+            # print(self.param_groups)
+            # print(group)
+            # print(group==self.param_groups)
+            # Theta_t=group[""]
+            # raise NotImplementedError
             for p in group["params"]:
                 if p.grad is None:
                     continue
@@ -44,6 +53,47 @@ class AdamW(Optimizer):
 
                 # Access hyperparameters from the `group` dictionary.
                 alpha = group["lr"]
+                Lambda = group["weight_decay"]
+                epsilon = group["eps"]
+                Betas=group["betas"]
+                Beta1=Betas[0]
+                Beta2=Betas[1]
+                """Initialization"""
+                mt=torch.zeros(p.data.shape)
+                vt=torch.zeros(p.data.shape)
+                t=torch.zeros(p.data.shape)
+
+                # print(group)
+                # print ("state ",state)
+
+                # print(p.data)
+                # print(p)
+
+                grad_zero=torch.zeros(grad.shape)
+                print(grad_zero,grad)
+                while (1):
+                    k=grad!=grad_zero
+                    
+                    t=t+1
+                    # print("p=",p)
+                    # print("grad=",grad)
+                    # print("Length of group['params']=",len(group["params"]))
+                    # print("p=",p)
+                    mt=Beta1*mt+(1-Beta1)*grad
+                    vt=Beta2*vt+(1-Beta2)*grad*grad
+                    # Less efficient version of the algorithm
+                    
+                    mt=mt/(1-Beta1**t)
+                    vt=vt/(1-Beta2**t)
+                    p.data=p.data-alpha*mt/(vt**(1/2)+epsilon)
+                    
+                    # Efficient version of the algorithm
+                    
+                    # alpha_t=(alpha*math.sqrt(1-Beta2**t))/(1-Beta2**t)
+                    # p.data=p.data-alpha_t*mt/(vt**(1/2)+epsilon)
+                    
+                    #-----------------------------------
+                    p.data=p.data-alpha*Lambda*p.data
 
                 # Complete the implementation of AdamW here, reading and saving
                 # your state in the `state` dictionary above.
@@ -58,9 +108,7 @@ class AdamW(Optimizer):
                 # 3. Update parameters (p.data).
                 # 4. Apply weight decay after the main gradient-based updates.
                 # Refer to the default project handout for more details.
-
                 ### TODO
-                raise NotImplementedError
-
-
+                # raise NotImplementedError
+        loss=p.grad.data
         return loss
