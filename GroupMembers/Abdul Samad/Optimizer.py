@@ -97,10 +97,10 @@ class AdamW(Optimizer):
                 p.data = p.data - ((step_size*m)/denominator)
                 print("p.data = ",p.data)
                 
-                if Lambda != 0:
-                    # θt ​=θt ​− α⋅λ⋅θ 
-                    p.data = p.data - lr * Lambda * p.data
-                    print(p.data)   
+                
+                # θt ​=θt ​− α⋅λ⋅θ 
+                p.data = p.data - lr * Lambda * p.data
+                print(p.data)   
 
                 
                 state["m"], state["v"], state["step"] = m, v, t
