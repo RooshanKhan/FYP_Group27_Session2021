@@ -33,7 +33,7 @@ class AdamW(Optimizer):
         # print(loss)
         # print(closure)
         '''Our Comments'''
-        """self.param_groups is a list with only one element that is a dictionary. The coming for loop line acces the only element of the list."""
+        """self.param_groups is a list with only one element that is a dictionary. The for loop in the next line acceses the only element of the list."""
         for group in self.param_groups:     # Here group is a dictionary
             # print("Hello")
             # print(self.param_groups)
@@ -98,17 +98,22 @@ class AdamW(Optimizer):
                 # print("vt = ",vt)
                 # Less efficient version of the algorithm
                 #--------------------------------------
-                # mt_hat=mt/(1-Beta1**t)
-                # vt_hat=vt/(1-Beta2**t)
-                # p.data=p.data-alpha*mt_hat/(vt_hat**(1/2)+epsilon)
+                mt_hat=mt/(1-Beta1**t)
+                vt_hat=vt/(1-Beta2**t)
+                p.data=p.data-alpha*mt_hat/(vt_hat**(1/2)+epsilon)
                 #--------------------------------------
                 # Efficient version of the algorithm
                 #--------------------------------------
-                alpha_t=(alpha*math.sqrt(1-Beta2**t))/(1-Beta1**t)
-                p.data=p.data-alpha_t*mt/(vt**(1/2)+epsilon)
+                # alpha_t=(alpha*math.sqrt(1-Beta2**t))/(1-Beta1**t)
+                # p.data=p.data-alpha_t*mt/(vt**(1/2)+epsilon)
                 #-----------------------------------
+                # loss=p.data
+                # if t==1000:    
+                #     print(p.data)
                 p.data=p.data-alpha*Lambda*p.data
-                loss=p.data
+                # if t==1000:
+                #     print(p.data,alpha,Lambda,loss)
+                # loss=p.data
 
                 state['t']=t
                 state['mt']=mt
@@ -134,4 +139,5 @@ class AdamW(Optimizer):
         # print(self.param_groups,self.param_groups[0],self.param_groups[0]["params"],self.param_groups[0]["params"][0])
         # loss=self.param_groups[0]["params"][0].grad.data
         # print("self.state = ",self.state[p])
+        print(loss)
         return loss

@@ -18,27 +18,27 @@ Let's first talk a briefly about RNNs. RNNs are a class of Neural Networks which
 \end{figure}
 
 The hidden state is calculated using the following equation:
-\begin{equation} \label{eqn}
+\begin{equation} \label{eqn1}
 h_t = {g(Uh_{t-1}+Wx_{t-1})}
 \end{equation}
 Here, \(h_t\) is the hidden state at time t, g is the activation function.
 
 Then, using the following equation output is calculated:
-\begin{equation} \label{eqn}
+\begin{equation} \label{eqn2}
 o_t = {f(Vh_t)}
 \end{equation}
 Here, \(o_t\) is the output at time t, f is another activation function.
 
 We studied bidirectional RNNs. \textbf{Biderection RNN} combines two independent RNNs, one where the input is processed from the start to the end and the other where the input is processed from the end to the start. We then concatenate the two hidden states into one vector. This vector captures both left and right contexts of an input at each point in time. Vector concatenation is shown like this:
-\begin{equation} \label{eqn}
+\begin{equation} \label{eqn3}
 h_t={[h_t^f;h_t^b]}
 \end{equation}
 RNNs are good at learning short term dependencies but fail to learn short term dependencies becauuse of the vanishing graddients problem.
 \section{Tasks}
 \subsection{Week 1}
-\subsection{Rooshan Khan: Attention Method in bert.py}
+\subsubsection{Rooshan Khan: Attention Method in bert.py}
 In this method we had to implement Attention method from class BertSelfAttention. The attention mechanism is given by:
-\begin{equation} \label{eqn}
+\begin{equation} \label{eqn4}
 Attention(Q,K,V) = {softmax(\frac{QK^T}{\sqrt{d_k}})V}
 \end{equation}
 where \( Q \), \( K \), and \( V \) represent the query, key, and value matrices, respectively, and \( d_k \) is the dimension of the key vectors.
@@ -53,17 +53,20 @@ The add\_norm function is a critical component of the Transformer architecture, 
 \subsection{Areesha Noor: forward Method in bert.py}
 In the Bertlayer class, we have a forward function following add-norm function. The forward function is responsible for the overall flow from multi-head attention, followed by add-norm, a  feed-forward layer and then another add-norm operation in the BERT architecture.So, the forward function transforms the input (hidden states) through series of sequential operations which represents the contextual relationships between tokens of sentences.
 
-This was implemented by first computing attention scores by using "forward function" in  BertSelfAttention class. By using this class, the hidden_states are processed through attention mechanism. The output of the attention is of the same size as of input \(i.e R^(NxD) \). Then, add-norm operation is applied to the attention scores using add\_norm function in BertLayer class. Here, the residual connection is applied to attention layer. Next, for implementation of feed-forward layer, the normalized output of attention layer (attention\_out\_norm) is first passed through dense linear transformation (interm\_dense). Mathematically, 
+This was implemented by first computing attention scores by using "forward function" in  BertSelfAttention class. By using this class, the hidden\_states are processed through attention mechanism. The output of the attention is of the same size as of input i.e.  $\textbf{R}^{\textbf{N} \times \textbf{D}}$. Then, add-norm operation is applied to the attention scores using add\_norm function in BertLayer class. Here, the residual connection is applied to attention layer. Next, for implementation of feed-forward layer, the normalized output of attention layer (attention\_out\_norm) is first passed through dense linear transformation (interm\_dense). Mathematically, 
 
-\begin{equation} \label{eqn}
-feedforward_out=W_1⋅attention_out_norm+b_1
+\begin{equation} \label{eqn5}
+\texttt{feedforward\_out}=\texttt{W}_1.\texttt{attention\_out\_norm}+\texttt{b}_1
 \end{equation}
-
 where 
-W1= weight matrix 
-b1 = bias vector 
+$W_1$ is weight matrix and $b_1$ is bias vector. 
 
 Then, activation function GELU (Gaussian Error Linear Unit) is applied to introduce non-linearity in the model. Mathematically,
-GELU = 0.5⋅x(1+tanh(2/π)⋅(x+0.044715x^3)))
- Finally, add-norm is applied by passing the feed-forward network through add-norm function for residual connection.
+\begin{equation} \label{eqn6}
+\texttt{GELU}=\frac{1}{2}.(1+tanh(\frac{\pi}{2})).(x+0.044715x^3)
+\end{equation}
+Finally, add-norm is applied by passing the feed-forward network through add-norm function for residual connection.
+\subsection{Week 2}
+\subsubsection{Rooshan Khan and Abdul Samad: step method in optimizer.py}
+The pseudocode for the Adam Optimizer was given in the default project document file. We followed it. We had to implement only one step. Hence, the loop is not needed. We have written the code for both cases: More efficient and Less efficient. \texttt{self.param\_groups} is a list with only one element that is a dictionary. The first for loop in the step() method acceses the only element of the list(i.e. dictionary). The state dictionary contains current values of time(t), momentum(mt), velocity(vt).
 \end{document}
