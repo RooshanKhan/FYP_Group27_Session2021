@@ -87,23 +87,25 @@ class AdamW(Optimizer):
 
                 # Less efficient version of the algorithm
                 #--------------------------------------
-                mt_hat=mt/(1-Beta1**t)
-                vt_hat=vt/(1-Beta2**t)
-                p.data=p.data-alpha*mt_hat/(vt_hat**(1/2)+epsilon)
+                # mt_hat=mt/(1-Beta1**t)
+                # vt_hat=vt/(1-Beta2**t)
+                # p.data=p.data-alpha*mt_hat/(vt_hat**(1/2)+epsilon)
                 #--------------------------------------
                 # Efficient version of the algorithm
                 #--------------------------------------
-                # alpha_t=(alpha*math.sqrt(1-Beta2**t))/(1-Beta1**t)
-                # p.data=p.data-alpha_t*mt/(vt**(1/2)+epsilon)
+                alpha_t=(alpha*math.sqrt(1-Beta2**t))/(1-Beta1**t)
+                p.data=p.data-alpha_t*mt/(vt**(1/2)+epsilon)
                 #-----------------------------------
                 p.data=p.data-alpha*Lambda*p.data
 
                 state['t']=t
                 state['mt']=mt
                 state['vt']=vt
-                self.state[p]=state
+                # self.state[p]=state   # This line is redundant because updates to state are directly reflected to self.stae[p]
+
 
 
 
         # print("Loss = ",p.data,"    Closure = ",closure)
+        # print (self.state[p])
         return loss
