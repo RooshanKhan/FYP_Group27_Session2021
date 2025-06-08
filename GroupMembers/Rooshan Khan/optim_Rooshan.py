@@ -30,11 +30,17 @@ class AdamW(Optimizer):
         loss = None
         if closure is not None:
             loss = closure()
-
+        # print(loss)
+        # print(closure)
         '''Our Comments'''
-        """self.param_groups is a list with only one element that is a dictionary. The for loop in the next line acceses the only element of the list."""
+        """self.param_groups is a list with only one element that is a dictionary. The coming for loop line acces the only element of the list."""
         for group in self.param_groups:     # Here group is a dictionary
-
+            # print("Hello")
+            # print(self.param_groups)
+            # print(group)
+            # print(group==self.param_groups)
+            # Theta_t=group[""]
+            # raise NotImplementedError
             for p in group["params"]:
                 if p.grad is None:
                     continue
@@ -44,6 +50,50 @@ class AdamW(Optimizer):
 
                 # State should be stored in this dictionary.
                 state = self.state[p]
+
+                # Access hyperparameters from the `group` dictionary.
+                alpha = group["lr"]
+                Lambda = group["weight_decay"]
+                epsilon = group["eps"]
+                Betas=group["betas"]
+                Beta1=Betas[0]
+                Beta2=Betas[1]
+                """Initialization"""
+                mt=torch.zeros(p.data.shape)
+                vt=torch.zeros(p.data.shape)
+                t=torch.zeros(p.data.shape)
+
+                # print(group)
+                # print ("state ",state)
+
+                # print(p.data)
+                # print(p)
+
+                grad_zero=torch.zeros(grad.shape)
+                # print(grad_zero,grad)
+                while (torch.any(~(grad==grad_zero)).item()==False): # We use `tensor.item()` in Python to convert a 0-dim tensor to a number
+                    print(torch.any(~(grad==grad_zero)).item()==False)
+                    t=t+1
+                    # print("p=",p)
+                    # print("grad=",grad)
+                    # print("Length of group['params']=",len(group["params"]))
+                    # print("p=",p)
+                    mt=Beta1*mt+(1-Beta1)*grad
+                    vt=Beta2*vt+(1-Beta2)*grad*grad
+                    # Less efficient version of the algorithm
+                    
+                    mt=mt/(1-Beta1**t)
+                    vt=vt/(1-Beta2**t)
+                    p.data=p.data-alpha*mt/(vt**(1/2)+epsilon)
+                    
+                    # Efficient version of the algorithm
+                    
+                    # alpha_t=(alpha*math.sqrt(1-Beta2**t))/(1-Beta2**t)
+                    # p.data=p.data-alpha_t*mt/(vt**(1/2)+epsilon)
+                    
+                    #-----------------------------------
+                    p.data=p.data-alpha*Lambda*p.data
+                    loss=p.grad.data
 
                 # Complete the implementation of AdamW here, reading and saving
                 # your state in the `state` dictionary above.
@@ -59,53 +109,7 @@ class AdamW(Optimizer):
                 # 4. Apply weight decay after the main gradient-based updates.
                 # Refer to the default project handout for more details.
                 ### TODO
-
-                m0=torch.zeros(p.data.shape)
-                v0=torch.zeros(p.data.shape)
-                t0=0
-
-                if (len(state)==0):
-                    state['t']=t0
-                    state['mt']=m0
-                    state['vt']=v0
-                    self.state[p]=state
-                # print("self.state = ",state)
-                mt=state['mt']
-                vt=state['vt']
-                t=state['t']
-                # Access hyperparameters from the `group` dictionary.
-                alpha = group["lr"]
-                Lambda = group["weight_decay"]
-                epsilon = group["eps"]
-                Betas=group["betas"]
-                Beta1=Betas[0]
-                Beta2=Betas[1]
-
-                t=t+1
-                mt=Beta1*mt+(1-Beta1)*grad
-                vt=Beta2*vt+(1-Beta2)*grad*grad
-
-                # Less efficient version of the algorithm
-                #--------------------------------------
-                # mt_hat=mt/(1-Beta1**t)
-                # vt_hat=vt/(1-Beta2**t)
-                # p.data=p.data-alpha*mt_hat/(vt_hat**(1/2)+epsilon)
-                #--------------------------------------
-                # Efficient version of the algorithm
-                #--------------------------------------
-                alpha_t=(alpha*math.sqrt(1-Beta2**t))/(1-Beta1**t)
-                p.data=p.data-alpha_t*mt/(vt**(1/2)+epsilon)
-                #-----------------------------------
-                p.data=p.data-alpha*Lambda*p.data
-
-                state['t']=t
-                state['mt']=mt
-                state['vt']=vt
-                # self.state[p]=state   # This line is redundant because updates to state are directly reflected to self.stae[p]
-
-
-
-
-        # print("Loss = ",p.data,"    Closure = ",closure)
-        # print (self.state[p])
+                # raise NotImplementedError
+        # print(self.param_groups,self.param_groups[0],self.param_groups[0]["params"],self.param_groups[0]["params"][0])
+        # loss=self.param_groups[0]["params"][0].grad.data
         return loss

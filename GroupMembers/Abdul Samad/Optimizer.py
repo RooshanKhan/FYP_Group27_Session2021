@@ -1,6 +1,5 @@
 from typing import Callable, Iterable, Tuple
 import math
-
 import torch
 from torch.optim import Optimizer
 
@@ -31,11 +30,10 @@ class AdamW(Optimizer):
         if closure is not None:
             loss = closure()
 
-        '''Our Comments'''
-        """self.param_groups is a list with only one element that is a dictionary. The for loop in the next line acceses the only element of the list."""
-        for group in self.param_groups:     # Here group is a dictionary
-
+        for group in self.param_groups:
+            print("step")
             for p in group["params"]:
+                print("p", p)
                 if p.grad is None:
                     continue
                 grad = p.grad.data
@@ -44,6 +42,16 @@ class AdamW(Optimizer):
 
                 # State should be stored in this dictionary.
                 state = self.state[p]
+                print("State", state)
+
+                # Access hyperparameters from the `group` dictionary.
+                alpha = group["lr"]
+                eps = group["eps"]
+                Lambda = group["weight_decay"]
+                lr = group["lr"]
+                beta1, beta2 = group["betas"]
+                
+                
 
                 # Complete the implementation of AdamW here, reading and saving
                 # your state in the `state` dictionary above.
@@ -58,54 +66,46 @@ class AdamW(Optimizer):
                 # 3. Update parameters (p.data).
                 # 4. Apply weight decay after the main gradient-based updates.
                 # Refer to the default project handout for more details.
+                
                 ### TODO
+                if len(state)==0:
+                    state["m"] = torch.zeros_like(p.data)
+                    state["v"] = torch.zeros_like(p.data)
+                    state["step"] = 0   
+                
+                m, v, t = state["m"], state["v"], state["step"]
+                
+                beta1,beta2 = group["betas"]
+                
+                m = ((m*beta1) + (grad*(1-beta1)))
+                v = ((v*beta2) + (grad*grad*(1-beta2)))
+                
+                print("moment1", m)
+                print("moment2", v)
+                              
+                t += 1
+                
+                bias_correction1 = (1- beta1**t)
+                bias_correction2 = (1- beta2**t)
+                
+                #αt ← α · sqrt(1 − β2t) /(1 − β1t )
+                
+                step_size = alpha * (math.sqrt(bias_correction2))/(bias_correction1)
+                print("step_size = ", step_size)
+                # θt ← θt−1 − αt · mt /(sqrt(vt) + ϵ)
+                denominator = (v.sqrt())+ eps
+                p.data = p.data - ((step_size*m)/denominator)
+                print("p.data = ",p.data)
+                
+                
+                # θt ​=θt ​− α⋅λ⋅θ 
+                p.data = p.data - lr * Lambda * p.data
+                print(p.data)   
 
-                m0=torch.zeros(p.data.shape)
-                v0=torch.zeros(p.data.shape)
-                t0=0
-
-                if (len(state)==0):
-                    state['t']=t0
-                    state['mt']=m0
-                    state['vt']=v0
-                    self.state[p]=state
-                # print("self.state = ",state)
-                mt=state['mt']
-                vt=state['vt']
-                t=state['t']
-                # Access hyperparameters from the `group` dictionary.
-                alpha = group["lr"]
-                Lambda = group["weight_decay"]
-                epsilon = group["eps"]
-                Betas=group["betas"]
-                Beta1=Betas[0]
-                Beta2=Betas[1]
-
-                t=t+1
-                mt=Beta1*mt+(1-Beta1)*grad
-                vt=Beta2*vt+(1-Beta2)*grad*grad
-
-                # Less efficient version of the algorithm
-                #--------------------------------------
-                # mt_hat=mt/(1-Beta1**t)
-                # vt_hat=vt/(1-Beta2**t)
-                # p.data=p.data-alpha*mt_hat/(vt_hat**(1/2)+epsilon)
-                #--------------------------------------
-                # Efficient version of the algorithm
-                #--------------------------------------
-                alpha_t=(alpha*math.sqrt(1-Beta2**t))/(1-Beta1**t)
-                p.data=p.data-alpha_t*mt/(vt**(1/2)+epsilon)
-                #-----------------------------------
-                p.data=p.data-alpha*Lambda*p.data
-
-                state['t']=t
-                state['mt']=mt
-                state['vt']=vt
-                # self.state[p]=state   # This line is redundant because updates to state are directly reflected to self.stae[p]
-
-
-
-
-        # print("Loss = ",p.data,"    Closure = ",closure)
-        # print (self.state[p])
+                
+                state["m"], state["v"], state["step"] = m, v, t
+                print("m: ", m)
+                print("v: ", v)
+                
+                   
         return loss

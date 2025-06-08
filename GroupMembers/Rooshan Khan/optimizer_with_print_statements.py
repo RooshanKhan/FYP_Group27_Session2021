@@ -30,11 +30,17 @@ class AdamW(Optimizer):
         loss = None
         if closure is not None:
             loss = closure()
-
+        # print(loss)
+        # print(closure)
         '''Our Comments'''
         """self.param_groups is a list with only one element that is a dictionary. The for loop in the next line acceses the only element of the list."""
         for group in self.param_groups:     # Here group is a dictionary
-
+            # print("Hello")
+            # print(self.param_groups)
+            # print(group)
+            # print(group==self.param_groups)
+            # Theta_t=group[""]
+            # raise NotImplementedError
             for p in group["params"]:
                 if p.grad is None:
                     continue
@@ -44,26 +50,12 @@ class AdamW(Optimizer):
 
                 # State should be stored in this dictionary.
                 state = self.state[p]
-
-                # Complete the implementation of AdamW here, reading and saving
-                # your state in the `state` dictionary above.
-                # The hyperparameters can be read from the `group` dictionary
-                # (they are lr, betas, eps, weight_decay, as saved in the constructor).
-                #
-                # To complete this implementation:
-                # 1. Update the first and second moments of the gradients.
-                # 2. Apply bias correction
-                #    (using the "efficient version" given in https://arxiv.org/abs/1412.6980;
-                #     also given in the pseudo-code in the project description).
-                # 3. Update parameters (p.data).
-                # 4. Apply weight decay after the main gradient-based updates.
-                # Refer to the default project handout for more details.
-                ### TODO
-
+                # print(state)
                 m0=torch.zeros(p.data.shape)
                 v0=torch.zeros(p.data.shape)
                 t0=0
-
+                # print("self.state = ",self.state[p])
+                # print("len(state)",len(state))
                 if (len(state)==0):
                     state['t']=t0
                     state['mt']=m0
@@ -80,32 +72,72 @@ class AdamW(Optimizer):
                 Betas=group["betas"]
                 Beta1=Betas[0]
                 Beta2=Betas[1]
+                # print(vt)
+                """Initialization"""
+                # mt=torch.zeros(p.data.shape)
+                # vt=torch.zeros(p.data.shape)
+                # t=torch.zeros(p.data.shape)
 
+                # print(group)
+                # print ("state ",state)
+
+                # print(p.data)
+                # print(p)
+
+                # grad_zero=torch.zeros(grad.shape)
+                # print(grad_zero,grad)
+                # while (torch.any(~(grad==grad_zero)).item()==False): # We use `tensor.item()` in Python to convert a 0-dim tensor to a number
+                    # print(torch.any(~(grad==grad_zero)).item()==False)
                 t=t+1
+                # print("p=",p)
+                # print("grad=",grad)
+                # print("Length of group['params']=",len(group["params"]))
+                # print("p=",p)
                 mt=Beta1*mt+(1-Beta1)*grad
                 vt=Beta2*vt+(1-Beta2)*grad*grad
-
+                # print("vt = ",vt)
                 # Less efficient version of the algorithm
                 #--------------------------------------
-                # mt_hat=mt/(1-Beta1**t)
-                # vt_hat=vt/(1-Beta2**t)
-                # p.data=p.data-alpha*mt_hat/(vt_hat**(1/2)+epsilon)
+                mt_hat=mt/(1-Beta1**t)
+                vt_hat=vt/(1-Beta2**t)
+                p.data=p.data-alpha*mt_hat/(vt_hat**(1/2)+epsilon)
                 #--------------------------------------
                 # Efficient version of the algorithm
                 #--------------------------------------
-                alpha_t=(alpha*math.sqrt(1-Beta2**t))/(1-Beta1**t)
-                p.data=p.data-alpha_t*mt/(vt**(1/2)+epsilon)
+                # alpha_t=(alpha*math.sqrt(1-Beta2**t))/(1-Beta1**t)
+                # p.data=p.data-alpha_t*mt/(vt**(1/2)+epsilon)
                 #-----------------------------------
+                # loss=p.data
+                # if t==1000:    
+                #     print(p.data)
                 p.data=p.data-alpha*Lambda*p.data
+                # if t==1000:
+                #     print(p.data,alpha,Lambda,loss)
+                # loss=p.data
 
                 state['t']=t
                 state['mt']=mt
                 state['vt']=vt
-                # self.state[p]=state   # This line is redundant because updates to state are directly reflected to self.stae[p]
+                self.state[p]=state
 
-
-
-
-        # print("Loss = ",p.data,"    Closure = ",closure)
-        # print (self.state[p])
+                # Complete the implementation of AdamW here, reading and saving
+                # your state in the `state` dictionary above.
+                # The hyperparameters can be read from the `group` dictionary
+                # (they are lr, betas, eps, weight_decay, as saved in the constructor).
+                #
+                # To complete this implementation:
+                # 1. Update the first and second moments of the gradients.
+                # 2. Apply bias correction
+                #    (using the "efficient version" given in https://arxiv.org/abs/1412.6980;
+                #     also given in the pseudo-code in the project description).
+                # 3. Update parameters (p.data).
+                # 4. Apply weight decay after the main gradient-based updates.
+                # Refer to the default project handout for more details.
+                ### TODO
+                # if t==10:
+                #     raise NotImplementedError
+        # print(self.param_groups,self.param_groups[0],self.param_groups[0]["params"],self.param_groups[0]["params"][0])
+        # loss=self.param_groups[0]["params"][0].grad.data
+        # print("self.state = ",self.state[p])
+        print("Loss = ",p.data,"    Closure = ",closure)
         return loss
