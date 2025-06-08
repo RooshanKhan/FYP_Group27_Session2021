@@ -21,7 +21,10 @@ class BertSelfAttention(nn.Module):
     # implementation of transformer. Although it is a bit unusual, we empirically
     # observe that it yields better performance.
     self.dropout = nn.Dropout(config.attention_probs_dropout_prob)
-
+    # print("self.num_attention_heads = ",self.num_attention_heads)
+    # print("self.attention_head_size = ",self.attention_head_size)
+    # print("self.all_head_size = ",self.all_head_size)
+    
   def transform(self, x, linear_layer):
     # The corresponding linear_layer of k, v, q are used to project the hidden_state (x).
     bs, seq_len = x.shape[:2]
@@ -42,7 +45,7 @@ class BertSelfAttention(nn.Module):
     # Before normalizing the scores, use the attention mask to mask out the padding token scores.
     # Note that the attention mask distinguishes between non-padding tokens (with a value of 0)
     # and padding tokens (with a value of a large negative number).
-
+    # [bs, seq_len,num_attention_heads, attention_head_size]
     # Make sure to:
     # - Normalize the scores with softmax.
     # - Multiply the attention scores with the value to get back weighted values.
@@ -51,23 +54,23 @@ class BertSelfAttention(nn.Module):
     ### TODO
 
     S=torch.matmul(query, torch.transpose(key,2,3))
-    print(key.shape)
-    print(S.shape)
+    # print(key.shape)
+    # print(S.shape)
     S=S+attention_mask # Add for masking. We won't multiply.
     Attention_scores_unnormalized=S/math.sqrt(key[0,0,0].size()[0])
     # print(Attention_scores_unnormalized.shape)
     # raise NotImplementedError
     S_n=torch.softmax(Attention_scores_unnormalized,dim=-1)
     Weighted_Values=torch.matmul(S_n,value)
-    print(S_n.shape)
-    print(Weighted_Values.shape)
+    # print(S_n.shape)
+    # print(Weighted_Values.shape)
     Weighted_Values=Weighted_Values.transpose(1,2)
-    print(Weighted_Values.shape)
+    # print(Weighted_Values.shape)
     Weighted_Values=Weighted_Values.contiguous()
-    print(Weighted_Values.shape)
+    # print(Weighted_Values.shape)
     # print(key[0,0].size()[0],"*",key[0,0,0].size()[0],'=',key[0,0].size()[0]*key[0,0,0].size()[0])
     Weighted_Values=Weighted_Values.view(Weighted_Values.size()[0],Weighted_Values[0].size()[0],Weighted_Values[0,0].size()[0]*Weighted_Values[0,0,0].size()[0])
-    print(Weighted_Values.shape)
+    # print(Weighted_Values.shape)
     # raise NotImplementedError
     return Weighted_Values
   def forward(self, hidden_states, attention_mask):
@@ -142,7 +145,7 @@ class BertLayer(nn.Module):
     """
     ### TODO
 
-    attention_out = self.self_attention.forward(hidden_states, attention_mask)
+    attention_out = self.self_attention(hidden_states, attention_mask) # self.self_attention = BertSelfAttention(config) was initialized in __init__ function of this class
 
     attention_out_norm = self.add_norm(hidden_states,attention_out, self.attention_dense, self.attention_dropout, self.attention_layer_norm)
 
@@ -233,20 +236,36 @@ class BertModel(BertPreTrainedModel):
 
     return hidden_states
 
-  def forward(self, input_ids, attention_mask):
-    """
-    input_ids: [batch_size, seq_len], seq_len is the max length of the batch
-    attention_mask: same size as input_ids, 1 represents non-padding tokens, 0 represents padding tokens
-    """
-    # Get the embedding for each input token.
-    embedding_output = self.embed(input_ids=input_ids)
+  def forward(self, input_ids,attention_mask,perturbation=0,epsilon=1e-5):
+      """
+      input_ids: [batch_size, seq_len], seq_len is the max length of the batch
+      attention_mask: same size as input_ids, 1 represents non-padding tokens, 0 represents padding tokens
+      """
+      # Get the embedding for each input token.
+      embedding_output = self.embed(input_ids=input_ids).requires_grad_()
+      # embedding_output_with_noise=0
+      # sequence_output_n=0
+      # first_tk_n=0
+      # Feed to a transformer (a stack of BertLayers).
+      sequence_output = self.encode(embedding_output, attention_mask=attention_mask)
 
-    # Feed to a transformer (a stack of BertLayers).
-    sequence_output = self.encode(embedding_output, attention_mask=attention_mask)
+      # Feed embedding_output_with_noise to a transformer (a stack of BertLayers).
+      # sequence_output_n = self.encode(embedding_output_with_noise, attention_mask=attention_mask)
 
-    # Get cls token hidden state.
-    first_tk = sequence_output[:, 0]
-    first_tk = self.pooler_dense(first_tk)
-    first_tk = self.pooler_af(first_tk)
-
-    return {'last_hidden_state': sequence_output, 'pooler_output': first_tk}
+      # Get cls token hidden state.
+      first_tk = sequence_output[:, 0]
+      first_tk = self.pooler_dense(first_tk)
+      first_tk = self.pooler_af(first_tk)
+      if isinstance(perturbation, torch.Tensor):
+        # print("perturbation is a tensor")
+        norm = (torch.norm(perturbation, p=float('inf'),dim=(1, 2))).view(perturbation.shape[0], 1, 1)
+        perturbation=perturbation*epsilon/(norm+1e-8)
+        embedding_output_with_noise=embedding_output+perturbation
+        embedding_output_with_noise=embedding_output_with_noise.detach().requires_grad_()
+        sequence_output_n = self.encode(embedding_output_with_noise, attention_mask=attention_mask)
+        # Get cls token hidden state for embedding_output_with_noise.
+        first_tk_n = sequence_output_n[:, 0]
+        first_tk_n = self.pooler_dense(first_tk_n)
+        first_tk_n = self.pooler_af(first_tk_n)
+        return {'last_hidden_state': sequence_output, 'pooler_output': first_tk,'embedding_output': embedding_output,'last_hidden_state_wn': sequence_output_n, 'pooler_output_wn': first_tk_n,'embedding_output_with_noise': embedding_output_with_noise}
+      return {'last_hidden_state': sequence_output, 'pooler_output': first_tk}
