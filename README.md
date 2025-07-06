@@ -15,10 +15,10 @@ Large pre-trained models like BERT struggle with **catastrophic forgetting** whe
 - **Sentiment Classification (SST-5)**
 
 We propose a robust fine-tuning framework that integrates the following components:
-- **Smoothness-Inducing Adversarial Regularization:** Enhances model robust￾ness by training it to resist small perturbations in the input space.
-- **Bregman Proximal Point Optimization:** Prevents large and unstable pa￾rameter updates during fine-tuning, ensuring smoother convergence and reducing overfitting.
-- **Contrastive Learning:** Enhances sentence representations by pulling embeddings of semantically related sentence pairs closer together, while pushing apart those of unrelated pairs within the embedding space.
-- We also adopt the **Siamese Sentence-BERT (SBERT) Architecture** to create meaningful sentence embeddings that capture semantic similarity, enabling efficient comparison of sentence pairs.
+- **Smoothness-Inducing Adversarial Regularization:** Enhances model robustness by training it to resist small perturbations in the input space.
+- **Bregman Proximal Point Optimization:** Prevents large and unstable parameter updates during fine-tuning, ensuring smoother convergence and reducing overfitting.
+- **Contrastive Learning:** Enhances sentence representations by pulling embeddings of semantically related sentence pairs closer together, while pushing apart those of unrelated pairs within the embedding space.
+- We also adopt the **Siamese Sentence-BERT (SBERT) Architecture** to create meaningful sentence embeddings that capture semantic similarity, enabling efficient comparison of sentence pairs.
 ---
 
 ## 👥 Authors
@@ -32,12 +32,9 @@ Department of Electrical Engineering, UET Lahore
 
 ---
 ## 🙏 Acknowledgments
-- We would like to express our heartfelt gratitude to our supervisor, Dr. Irfan Ullah
-Chaudhry, for his invaluable guidance, continuous support, and encouragement throughout the course of this project.
-- We are also deeply thankful to Dr. Haroon Babri for his insightful suggestions and
-constructive feedback, which significantly enhanced our understanding and progress.
-- Lastly, we extend our sincere appreciation to Mr. Asad Ullah Khan for his consistent
-assistance and helpful input during the course of this work.
+- We would like to express our heartfelt gratitude to our supervisor, Dr. Irfan Ullah Chaudhry, for his invaluable guidance, continuous support, and encouragement throughout the course of this project.
+- We are also deeply thankful to Dr. Haroon Babri for his insightful suggestions and constructive feedback, which significantly enhanced our understanding and progress.
+- Lastly, we extend our sincere appreciation to Mr. Asad Ullah Khan for his consistent assistance and helpful input during the course of this work.
 ---
 
 ## 🧠 Model Architecture
