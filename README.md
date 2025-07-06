@@ -36,7 +36,24 @@ Department of Electrical Engineering, UET Lahore
 - We are also deeply thankful to Dr. Haroon Babri for his insightful suggestions and constructive feedback, which significantly enhanced our understanding and progress.
 - Lastly, we extend our sincere appreciation to Mr. Asad Ullah Khan for his consistent assistance and helpful input during the course of this work.
 ---
+## 🔬 Phase 1: Single-Task Fine-Tuning for Sentiment Analysis
 
+Phase 1 of our project focused on fine-tuning BERT for the sentiment analysis task using the **SST-5** and **CFIMDB** datasets. This phase aimed to understand the effectiveness of different fine-tuning strategies on a single task.
+
+We experimented with:
+1. **Last linear layer fine-tuning**
+2. **Full model fine-tuning**
+
+### 📊 Development Accuracies
+
+| Fine-Tuning Strategy       | Ours (SST) | Ours (CFIMDB) | Reference (SST) | Reference (CFIMDB) |
+|---------------------------|------------|----------------|------------------|----------------------|
+| Last linear layer         | 0.409      | 0.788          | 0.390            | 0.780                |
+| Full model fine-tuning    | 0.524      | 0.967          | 0.515            | 0.966                |
+
+These results confirmed that full model fine-tuning provides a significant boost in accuracy for sentiment analysis tasks.
+
+---
 ## 🧠 Model Architecture
 
 We use a shared BERT-base encoder and three task-specific heads:
