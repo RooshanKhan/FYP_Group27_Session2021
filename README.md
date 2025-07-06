@@ -14,11 +14,11 @@ Large pre-trained models like BERT struggle with **catastrophic forgetting** whe
 - **Semantic Textual Similarity (STS-B)**  
 - **Sentiment Classification (SST-5)**
 
-We addressed this using three key components:
-- **SMART**: Regularizes learning by penalizing sensitivity to perturbations.
-- **SimCSE**: Leverages contrastive learning for richer sentence embeddings.
-- **SBERT**: Enables effective sentence-pair comparisons using Siamese architecture.
-
+We propose a robust fine-tuning framework that integrates the following components:
+- **Smoothness-Inducing Adversarial Regularization:** Enhances model robust￾ness by training it to resist small perturbations in the input space.
+- **Bregman Proximal Point Optimization:** Prevents large and unstable pa￾rameter updates during fine-tuning, ensuring smoother convergence and reducing overfitting.
+- **Contrastive Learning:** Enhances sentence representations by pulling embeddings of semantically related sentence pairs closer together, while pushing apart those of unrelated pairs within the embedding space.
+- We also adopt the **Siamese Sentence-BERT (SBERT) Architecture** to create meaningful sentence embeddings that capture semantic similarity, enabling efficient comparison of sentence pairs.
 ---
 
 ## 👥 Authors
