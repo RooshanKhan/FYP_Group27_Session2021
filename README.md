@@ -90,6 +90,16 @@ Choose SS or SSS based on whether SST or STS performance is more critical.
 
 ---
 
+## 📦 Download Fine-Tuned Models
+
+The following models were fine-tuned as part of this Final Year Project using our proposed SMART-SBERT and SMART-SBERT + SimCSE framework. Due to GitHub LFS limitations, they are hosted externally:
+
+🔗 [Download from Google Drive](https://drive.google.com/drive/folders/17Ia3Q82RDLN1AelTeSwjSZLaunfxv2AB?usp=drive_link)
+
+### Included:
+- `SMART_SBERT.pt`: Our fine-tuned model using SMART regularization
+- `SMART_SBERT_SIMCSE.pt`: Our fine-tuned model using SMART + SimCSE contrastive learning
+
 ## 🛠️ Setup Instructions
 
 1. **Clone Repo**
