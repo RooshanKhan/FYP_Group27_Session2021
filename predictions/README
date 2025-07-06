@@ -1,0 +1,5 @@
+Accuracies:
+Fine-tuning the last linear layer for SST: Dev Accuracy: 0.409 > 0.390 (0.007)
+Fine-tuning the last linear layer for CFIMDB: Dev Accuracy:  0.788 > 0.780 (0.002)
+Fine-tuning the full model for SST: Dev Accuracy: 0.524 > 0.515 (0.004)
+Fine-tuning the full model for CFIMDB: Dev Accuracy: 0.967 > 0.966 (0.007)
