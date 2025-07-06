@@ -82,10 +82,6 @@ class MultitaskBERT(nn.Module):
         ### TODO
         self.dropout_layer = torch.nn.Dropout(config.hidden_dropout_prob)
         self.sentiment_classifier_layer = torch.nn.Linear(self.bert.config.hidden_size, 5)
-        #Layers to reduce the input dimensions by half because of previous concatenation
-        # self.paraphrase_classifier_layer_dim_red = torch.nn.Linear(1536,1536//2)
-        # self.similarity_classifier_layer_dim_red = torch.nn.Linear(1536,1536//2)
-        # Binary classifer layers
         self.paraphrase_classifier_layer = torch.nn.Linear(self.bert.config.hidden_size*3, 1)
         self.similarity_classifier_layer = torch.nn.Linear(self.bert.config.hidden_size*2, 1)
         self.SNLI_classifier_layer = torch.nn.Linear(self.bert.config.hidden_size*3, 3)
@@ -103,146 +99,6 @@ class MultitaskBERT(nn.Module):
         ### TODO
         embedding_output = self.bert(input_ids, attention_mask,noise)  # Using forward method in bert.py file
         return embedding_output
-
-    # def paraphrase_simcse_loss(self,
-    #                             input_ids_1, attention_mask_1,
-    #                             input_ids_2, attention_mask_2,labels,pooling='mean',
-    #                             temperature=0.05):
-
-    #     embedding_output1=self.forward(input_ids_1, attention_mask_1)
-    #     embedding_output2=self.forward(input_ids_2, attention_mask_2)
-    #     if pooling=='mean':
-    #         hidden_states1=embedding_output1['last_hidden_state']
-    #         hidden_states2=embedding_output2['last_hidden_state']
-    #         mask1=attention_mask_1.unsqueeze(-1).expand(-1, -1, hidden_states1.shape[2]).float()
-    #         mask2=attention_mask_2.unsqueeze(-1).expand(-1, -1, hidden_states1.shape[2]).float()
-    #         den1=torch.sum(attention_mask_1,dim=1).unsqueeze(-1).expand(-1, hidden_states1.shape[2])+1e-8
-    #         den2=torch.sum(attention_mask_2,dim=1).unsqueeze(-1).expand(-1, hidden_states1.shape[2])+1e-8
-    #         # print(mask1,den1)
-    #         # raise NotImplementedError
-    #         # mean
-    #         vector1 = torch.sum(mask1*(embedding_output1['last_hidden_state']), dim=1)/den1
-    #         vector2 = torch.sum(mask2*(embedding_output2['last_hidden_state']), dim=1)/den2
-    #     elif pooling=='cls':
-    #         vector1=embedding_output1['pooler_output']
-    #         vector2=embedding_output2['pooler_output']
-    #     Dropout_layer_output1=self.dropout_layer(vector1)
-    #     Dropout_layer_output2=self.dropout_layer(vector2)
-    #     Sents1 = Dropout_layer_output1
-    #     Sents2 = Dropout_layer_output2
-
-    #     # Normalize embeddings for cosine similarity
-    #     Sents1 = F.normalize(Sents1, dim=-1)
-    #     Sents2 = F.normalize(Sents2, dim=-1)
-
-    #     # Compute cosine similarities
-    #     sim_s1_s2 = torch.matmul(Sents1, Sents2.T) / temperature
-
-    #     exp_ap = torch.exp(sim_s1_s2.diag())  # correct pairs exist in diagonal only
-    #     exp_all = torch.exp(sim_s1_s2) # all (positive(if any) + negatives)
-
-    #     denom = exp_all.sum(dim=1)+ 1e-8
-    #     loss = -torch.log(exp_ap / denom)
-    #     loss=loss*labels
-    #     # if labels.sum()!=0:
-    #     simcse_loss=loss.sum()/(labels.sum()+1e-8)
-    #     # else:
-    #     #     simcse_loss=0
-    #     return simcse_loss
-
-    # def predict_simcse(self,
-    #                        input_ids_1, attention_mask_1,
-    #                        input_ids_2, attention_mask_2):
-    #     '''Given a batch of pairs of sentences, outputs a single logit corresponding to how similar they are.
-    #     Note that your output should be unnormalized (a logit).
-    #     '''
-    #     ### TODO
-    #     embedding_output1 = self.forward(input_ids_1, attention_mask_1)
-    #     embedding_output2 = self.forward(input_ids_2, attention_mask_2)
-    #     # torch.concat(embedding_output1,embedding_output2,dim=1)
-    #     # embedding_output=self.similarity_classifier_layer_dim_red()
-    #     Dropout_layer_output1 = self.dropout_layer(embedding_output1['pooler_output'])
-    #     Dropout_layer_output2 = self.dropout_layer(embedding_output2['pooler_output'])
-    #     # Add cosine similarity here
-    #     # Cosine_similarity=6*torch.sum(Dropout_layer_output1*Dropout_layer_output2,dim=1)
-    #     # /((torch.norm(Dropout_layer_output1,dim=1)*torch.norm(Dropout_layer_output2,dim=1)))
-    #     Concatenated_result = torch.concat((Dropout_layer_output1, Dropout_layer_output2,abs(Dropout_layer_output1-Dropout_layer_output2)), dim=1)
-    #     # embedding_output=self.paraphrase_classifier_layer_dim_red(Concatenated)
-    #     Linear_layer_output = self.similarity_SimCse_layer(
-    #         Concatenated_result)
-    #     # raise NotImplementedError
-    #     return Linear_layer_output
-
-
-    # def supervised_simcse_loss(self,
-    #                        input_ids_1, attention_mask_1,
-    #                        input_ids_2, attention_mask_2,
-    #                        input_ids_3, attention_mask_3,temperature=0.05):
-    #     '''Given a batch of pairs of sentences, outputs a single logit corresponding to how similar they are.
-    #     Note that your output should be unnormalized (a logit).
-    #     '''
-    #     ### TODO
-    #     embedding_output1 = self.forward(input_ids_1, attention_mask_1)
-    #     embedding_output2 = self.forward(input_ids_2, attention_mask_2)
-    #     embedding_output3 = self.forward(input_ids_3, attention_mask_3)
-    #     # torch.concat(embedding_output1,embedding_output2,dim=1)
-    #     # embedding_output=self.similarity_classifier_layer_dim_red()
-    #     Dropout_layer_output1 = self.dropout_layer(embedding_output1['pooler_output'])
-    #     Dropout_layer_output2 = self.dropout_layer(embedding_output2['pooler_output'])
-    #     Dropout_layer_output3 = self.dropout_layer(embedding_output3['pooler_output'])
-    #     # Create random tensors of shape (32768,)
-    #     a = Dropout_layer_output1
-    #     b = Dropout_layer_output2
-    #     c = Dropout_layer_output3
-    #     # Multiply transpose of c with a and store in cTa
-    #     aTc = torch.matmul(a, c.T)
-
-    #     # Multiply transpose of b with a and store in bTa
-    #     aTb = torch.matmul(a, b.T)
-
-    #     # Square each element of a and store in a_squared
-    #     a_squared = a ** 2
-
-    #     # Square each element of b and store in b_squared
-    #     b_squared = b ** 2
-
-    #     # Square each element of c and store in c_squared
-    #     c_squared = c ** 2
-
-    #     # Add a_squared columnwise and store in mag_square_a
-    #     mag_square_a = torch.sum(a_squared,dim=-1)
-
-    #     # Add b_squared columnwise and store in mag_square_b
-    #     mag_square_b = torch.sum(b_squared,dim=-1)
-
-    #     # Add c_squared columnwise and store in mag_square_c
-    #     mag_square_c = torch.sum(c_squared,dim=-1)
-
-    #     # Take square of mag_square_a and store in mag_a
-    #     mag_a = mag_square_a **0.5
-
-    #     # Take square of mag_square_b and store in mag_b
-    #     mag_b = mag_square_b **0.5
-
-    #     # Take square of mag_square_c and store in mag_c
-    #     mag_c = mag_square_c **0.5
-
-    #     mag_a_times_mag_b=torch.matmul(mag_a.unsqueeze(1),mag_b.unsqueeze(1).T)
-    #     mag_a_times_mag_c=torch.matmul(mag_a.unsqueeze(1),mag_c.unsqueeze(1).T)
-    #     PN=aTc/mag_a_times_mag_c
-    #     PE=aTb/mag_a_times_mag_b
-    #     PN_exp=torch.exp(PN/temperature)
-    #     PE_exp=torch.exp(PE/temperature)
-    #     diagonal_values = PE_exp.diagonal()
-    #     PN_sum=PN_exp.sum(dim=1)
-    #     PE_sum=PE_exp.sum(dim=1)
-    #     PN_PE_EXP=PN_sum+PE_sum
-    #     Fraction=diagonal_values/PN_PE_EXP
-    #     l=-1*torch.log(Fraction)
-    #     loss=l.sum()/32
-    #     # print(loss)
-    #     # raise NotImplementedError
-    #     return loss
 
     def supervised_simcse_loss(self,
                               input_ids_1, attention_mask_1,
@@ -269,9 +125,7 @@ class MultitaskBERT(nn.Module):
             den1=torch.sum(attention_mask_1,dim=1).unsqueeze(-1).expand(-1, hidden_states1.shape[2])+1e-8
             den2=torch.sum(attention_mask_2,dim=1).unsqueeze(-1).expand(-1, hidden_states2.shape[2])+1e-8
             den3=torch.sum(attention_mask_3,dim=1).unsqueeze(-1).expand(-1, hidden_states3.shape[2])+1e-8
-            # print(mask1,den1)
-            # raise NotImplementedError
-            # mean
+            
             vector1 = torch.sum(mask1*(embedding_output1['last_hidden_state']), dim=1)/den1
             vector2 = torch.sum(mask2*(embedding_output2['last_hidden_state']), dim=1)/den2
             vector3 = torch.sum(mask3*(embedding_output3['last_hidden_state']), dim=1)/den3
@@ -283,9 +137,6 @@ class MultitaskBERT(nn.Module):
         positive = self.dropout_layer(vector2)  # b
         negative = self.dropout_layer(vector3)  # c
 
-        # anchor = vector1  # a
-        # positive = vector2  # b
-        # negative = vector3  # c
 
         # Normalize embeddings for cosine similarity
         anchor = F.normalize(anchor, dim=-1)
@@ -366,16 +217,11 @@ class MultitaskBERT(nn.Module):
             mask2=attention_mask_2.unsqueeze(-1).expand(-1, -1, hidden_states1.shape[2]).float()
             den1=torch.sum(attention_mask_1,dim=1).unsqueeze(-1).expand(-1, hidden_states1.shape[2])+1e-8
             den2=torch.sum(attention_mask_2,dim=1).unsqueeze(-1).expand(-1, hidden_states1.shape[2])+1e-8
-            # print(mask1,den1)
-            # raise NotImplementedError
-            # mean
             vector1 = torch.sum(mask1*(embedding_output1['last_hidden_state']), dim=1)/den1
             vector2 = torch.sum(mask2*(embedding_output2['last_hidden_state']), dim=1)/den2
         elif pooling=='cls':
             vector1=embedding_output1['pooler_output']
             vector2=embedding_output2['pooler_output']
-        # Dropout_layer_output1=self.dropout_layer(vector1)
-        # Dropout_layer_output2=self.dropout_layer(vector2)
 
         Concatenated_result=torch.concat((vector1,vector2,abs(vector1-vector2)),dim=1)
         logits=self.SNLI_classifier_layer(Concatenated_result)
@@ -428,9 +274,6 @@ class MultitaskBERT(nn.Module):
             mask2=attention_mask_2.unsqueeze(-1).expand(-1, -1, hidden_states1.shape[2]).float()
             den1=torch.sum(attention_mask_1,dim=1).unsqueeze(-1).expand(-1, hidden_states1.shape[2])+1e-8
             den2=torch.sum(attention_mask_2,dim=1).unsqueeze(-1).expand(-1, hidden_states1.shape[2])+1e-8
-            # print(mask1,den1)
-            # raise NotImplementedError
-            # mean
             vector1 = torch.sum(mask1*(embedding_output1['last_hidden_state']), dim=1)/den1
             vector2 = torch.sum(mask2*(embedding_output2['last_hidden_state']), dim=1)/den2
         elif pooling=='cls':
@@ -440,11 +283,8 @@ class MultitaskBERT(nn.Module):
         Dropout_layer_output2=self.dropout_layer(vector2)
 
         Concatenated_result=torch.concat((Dropout_layer_output1,Dropout_layer_output2,abs(Dropout_layer_output1-Dropout_layer_output2)),dim=1)
-        # Concatenated_result=torch.concat((vector1,vector2,abs(vector1-vector2)),dim=1)
-        # Dropout_Concatenated_result=Concatenated_result
-        logit=self.paraphrase_classifier_layer(Concatenated_result) #Pooler output is the last layer hidden-state of the first token of the sequence (classification token). logits = Linear_layer_output
+        logit=self.paraphrase_classifier_layer(Concatenated_result)
         if isinstance(noise1, torch.Tensor) and isinstance(noise2, torch.Tensor):
-            #mean
             if pooling=='mean':
                 vector1_wn = torch.sum(mask1*(embedding_output1['last_hidden_state_wn']), dim=1)/den1
                 vector2_wn = torch.sum(mask2*(embedding_output2['last_hidden_state_wn']), dim=1)/den2
@@ -454,7 +294,6 @@ class MultitaskBERT(nn.Module):
             Dropout_layer_output1_wn=self.dropout_layer(vector1_wn)
             Dropout_layer_output2_wn=self.dropout_layer(vector2_wn)
             Concatenated_result_wn=torch.concat((Dropout_layer_output1_wn,Dropout_layer_output2_wn,abs(Dropout_layer_output1_wn-Dropout_layer_output2_wn)),dim=1)
-            # Dropout_Concatenated_result_wn=self.dropout_layer(Concatenated_result_wn)
             logit_wn=self.paraphrase_classifier_layer(Concatenated_result_wn)
             Embedding_in1=embedding_output1['embedding_output']
             Embedding_in2=embedding_output2['embedding_output']
@@ -462,7 +301,6 @@ class MultitaskBERT(nn.Module):
             Embedding_in2_wn=embedding_output2['embedding_output_with_noise']
             return logit,logit_wn,Embedding_in1,Embedding_in2,Embedding_in1_wn,Embedding_in2_wn
         return logit
-        # raise NotImplementedError
 
     def predict_similarity(self,
                            input_ids_1, attention_mask_1,
@@ -480,9 +318,6 @@ class MultitaskBERT(nn.Module):
             mask2=attention_mask_2.unsqueeze(-1).expand(-1, -1, hidden_states1.shape[2]).float()
             den1=torch.sum(attention_mask_1,dim=1).unsqueeze(-1).expand(-1, hidden_states1.shape[2])+1e-8
             den2=torch.sum(attention_mask_2,dim=1).unsqueeze(-1).expand(-1, hidden_states1.shape[2])+1e-8
-            # print(mask1,den1)
-            # raise NotImplementedError
-            # mean
             vector1 = torch.sum(mask1*(embedding_output1['last_hidden_state']), dim=1)/den1
             vector2 = torch.sum(mask2*(embedding_output2['last_hidden_state']), dim=1)/den2
         elif pooling=='cls':
@@ -492,7 +327,6 @@ class MultitaskBERT(nn.Module):
         Dropout_layer_output2=self.dropout_layer(vector2)
         Cosine_similarity=(torch.sum(Dropout_layer_output1*Dropout_layer_output2,dim=1)/((torch.norm(Dropout_layer_output1,dim=1)*torch.norm(Dropout_layer_output2,dim=1))+1e-8)+1)*2.5
         if isinstance(noise1, torch.Tensor) and isinstance(noise2, torch.Tensor):
-            #mean
             if pooling=='mean':
                 vector1_wn = torch.sum(mask1*(embedding_output1['last_hidden_state_wn']), dim=1)/den1
                 vector2_wn = torch.sum(mask2*(embedding_output2['last_hidden_state_wn']), dim=1)/den2
@@ -508,90 +342,6 @@ class MultitaskBERT(nn.Module):
             Embedding_in2_wn=embedding_output2['embedding_output_with_noise']
             return Cosine_similarity,Cosine_similarity_wn,Embedding_in1,Embedding_in2,Embedding_in1_wn,Embedding_in2_wn
         return Cosine_similarity
-        # raise NotImplementedError
-    # def contrastive_loss(self, z_i, z_j, temperature=0.05):
-    #     """
-    #     Computes NT-Xent contrastive loss for SimCSE.
-
-    #     Args:
-    #         z_i (torch.Tensor): First  batch of sentence embeddings, 2D tensor with shape (batch_size, hidden_dim)
-    #         z_j (torch.Tensor): Second batch of sentence embeddings, 2D tensor with shape (batch_size, hidden_dim)
-    #         temperature (float): Temperature scaling factor for contrastive loss.
-
-    #     Returns:
-    #         torch.Tensor: Contrastive loss value.
-    #     """
-    #     batch_size = z_i.shape[0]
-
-    #     similarity_matrix = torch.matmul(z_i, z_j.T) / temperature
-
-    #     labels = torch.arrange(batch_size).to(z_i.device)
-
-    #     loss = F.cross_entropy(similarity_matrix, labels)
-
-    #     return loss
-
-    # def predict_sentiment(self, input_ids, attention_mask):
-    #     '''Given a batch of sentences, outputs logits for classifying sentiment.
-    #     There are 5 sentiment classes:
-    #     (0 - negative, 1- somewhat negative, 2- neutral, 3- somewhat positive, 4- positive)
-    #     Thus, your output should contain 5 logits for each sentence.
-    #     '''
-    #     ### TODO
-    #     embedding_output=self.forward(input_ids, attention_mask)
-    #     Dropout_layer_output=self.dropout_layer(embedding_output['pooler_output'])
-    #     Linear_layer_output=self.sentiment_classifier_layer(Dropout_layer_output) #Pooler output is the last layer hidden-state of the first token of the sequence (classification token). logits = Linear_layer_output
-    #     return Linear_layer_output
-    #     # raise NotImplementedError
-
-
-    # def predict_paraphrase(self,
-    #                        input_ids_1, attention_mask_1,
-    #                        input_ids_2, attention_mask_2):
-    #     '''Given a batch of pairs of sentences, outputs a single logit for predicting whether they are paraphrases.
-    #     Note that your output should be unnormalized (a logit); it will be passed to the sigmoid function
-    #     during evaluation.
-    #     '''
-    #     ### TODO
-    #     embedding_output1=self.forward(input_ids_1, attention_mask_1)
-    #     embedding_output2=self.forward(input_ids_2, attention_mask_2)
-    #     # torch.concat(embedding_output1,embedding_output2,dim=1)
-    #     # embedding_output=self.similarity_classifier_layer_dim_red()
-    #     Dropout_layer_output1=self.dropout_layer(embedding_output1['pooler_output'])
-    #     Dropout_layer_output2=self.dropout_layer(embedding_output2['pooler_output'])
-    #     #Add cosine similarity here
-    #     # Cosine_similarity=torch.sum(Dropout_layer_output1*Dropout_layer_output2,dim=1)
-    #     # /((torch.norm(Dropout_layer_output1,dim=1)*torch.norm(Dropout_layer_output2,dim=1)))
-    #     Concatenated_result=torch.concat((Dropout_layer_output1,Dropout_layer_output2),dim=1)
-    #     # embedding_output=self.paraphrase_classifier_layer_dim_red(Concatenated)
-    #     Linear_layer_output=self.paraphrase_classifier_layer(Concatenated_result) #Pooler output is the last layer hidden-state of the first token of the sequence (classification token). logits = Linear_layer_output
-    #     return Linear_layer_output
-    #     # raise NotImplementedError
-
-
-    # def predict_similarity(self,
-    #                        input_ids_1, attention_mask_1,
-    #                        input_ids_2, attention_mask_2):
-    #     '''Given a batch of pairs of sentences, outputs a single logit corresponding to how similar they are.
-    #     Note that your output should be unnormalized (a logit).
-    #     '''
-    #     ### TODO
-    #     embedding_output1=self.forward(input_ids_1, attention_mask_1)
-    #     embedding_output2=self.forward(input_ids_2, attention_mask_2)
-    #     # torch.concat(embedding_output1,embedding_output2,dim=1)
-    #     # embedding_output=self.similarity_classifier_layer_dim_red()
-    #     Dropout_layer_output1=self.dropout_layer(embedding_output1['pooler_output'])
-    #     Dropout_layer_output2=self.dropout_layer(embedding_output2['pooler_output'])
-    #     #Add cosine similarity here
-    #     # Cosine_similarity=6*torch.sum(Dropout_layer_output1*Dropout_layer_output2,dim=1)
-    #     # /((torch.norm(Dropout_layer_output1,dim=1)*torch.norm(Dropout_layer_output2,dim=1)))
-    #     Concatenated_result=torch.concat((Dropout_layer_output1,Dropout_layer_output2),dim=1)
-    #     # embedding_output=self.paraphrase_classifier_layer_dim_red(Concatenated)
-    #     Linear_layer_output=self.similarity_classifier_layer(Concatenated_result) #Pooler output is the last layer hidden-state of the first token of the sequence (classification token). logits = Linear_layer_output
-    #     # print(Linear_layer_output)
-    #     # raise NotImplementedError
-    #     return Linear_layer_output
-    #     # raise NotImplementedError
 
 def save_model(model, optimizer, args, config, filepath):
     save_info = {
@@ -684,7 +434,6 @@ def train_multitask(args):
         num_batches = 0
 
         for batch in tqdm(snli_train_dataloader, desc=f'SimCSE-{epoch}', disable=TQDM_DISABLE):
-            # print(batch)
             b_ids1, b_mask1, b_ids2, b_mask2, b_ids3, b_mask3 = (
                 batch['token_ids_1'], batch['attention_mask_1'],
                 batch['token_ids_2'], batch['attention_mask_2'],
@@ -715,12 +464,6 @@ def train_multitask(args):
             save_model(model, optimizer, args, config, args.filepath)
         print(f"Epoch {epoch}: dev_sts_corr :: {dev_sts_corr :.3f}")
 
-        # if simcse_dev_acc > best_simcse_dev_acc:
-        #     best_simcse_dev_acc = simcse_dev_acc
-        #     # save_model(model, optimizer, args, config, args.filepath)
-
-        # print(f"Epoch {epoch}: SimCSE loss: {simcse_train_loss:.3f}, SimCSE Dev Accuracy: {simcse_dev_acc:.3f}")
-
     model = MultitaskBERT(config)
     checkpoint = torch.load(args.filepath, map_location=device, weights_only=False)
     model.load_state_dict(checkpoint["model"])
@@ -739,16 +482,8 @@ def train_multitask(args):
     overall_perf_acc=((dev_sts_corr+1)/2+sst_dev_acc+paraphrase_dev_acc)/3
     print('Overall Performance = ',overall_perf_acc)
     best_overall_perf=overall_perf_acc
-    # overall_perf_f1=((dev_sts_corr+1)/2+sst_dev_f1+paraphrase_dev_f1)/3
-    # print('Overall Performance = ',overall_perf_f1)
-    # best_overall_perf=overall_perf_f1
-    # raise NotImplementedError
-
-    # best_overall_perf=overall_perf
-    # save_model(model, optimizer, args, config, 'safe.pt')
     lr = args.lr
     optimizer = AdamW(model.parameters(), lr=lr)
-    # save_model(model, optimizer, args, config, 'Simcse_Para1.pt')
     epsilon=1e-5
     eps = 1e-8
     lambda_s=0
@@ -760,7 +495,7 @@ def train_multitask(args):
     mu=0
     model_copy = copy.deepcopy(model)
     # Run for the specified number of epochs.
-    for epoch in range(args.epochs//10*1):
+    for epoch in range(1):
         model.train()
         train_loss = 0
         num_batches = 0
@@ -780,14 +515,11 @@ def train_multitask(args):
 
             if lambda_s!=0 or mu!=0:
                 theta_tilde_s=copy.deepcopy(theta_t)
-                # optimizer.zero_grad()
                 if n==3538:
                     Beta=0.999
                 n+=1
-                # model_copy = copy.deepcopy(model)
                 model_copy.load_state_dict(theta_tilde_t)
                 for s in range(0,S):
-                    # model.load_state_dict(copy.deepcopy(theta_tilde_s))
                     noise1 = torch.randn(b_ids1.shape[0], b_ids1.shape[1], 768)*std+mean
                     noise1=noise1.to(device)
                     noise2 = torch.randn(b_ids2.shape[0], b_ids2.shape[1], 768)*std+mean
@@ -798,38 +530,22 @@ def train_multitask(args):
                         prob_wn = torch.sigmoid(logit_wn)  # with noise
                         P1 = torch.cat([1 - prob, prob], dim=1)  # [P(not paraphrase), P(paraphrase)]
                         Q = torch.cat([1 - prob_wn, prob_wn], dim=1)
-
-                        # P1=F.softmax(logit, dim=1)
-                        # Q=F.softmax(logit_wn, dim=1)
                         KL_divergence_PQ = P1 * torch.log((P1 + eps) / (Q + eps))
                         KL_divergence_QP = Q * torch.log((Q + eps) / (P1 + eps))
                         ls=KL_divergence_PQ+KL_divergence_QP
                         ls=ls.sum()
-                        # Rs=torch.sum(max_ls)/max_ls.shape[0]
                         ls.backward() # retain_graph=True to allow backward being called again
-                        # gi=Embedding_in.grad.sum(dim=0)/Embedding_in.shape[0]
                         gi1_tilde=Embedding_in1_wn.grad/Embedding_in1_wn.shape[0]
                         gi2_tilde=Embedding_in2_wn.grad/Embedding_in2_wn.shape[0]
-                        # gi=gi.sum(dim=0)
-                        # print('\n\n',gi.shape,'\n\n')
                         gi1_tilde/=(torch.norm(gi1_tilde,p=float('inf'),dim=(1, 2)).view(gi1_tilde.shape[0],1,1)+eps)
                         gi2_tilde/=(torch.norm(gi2_tilde,p=float('inf'),dim=(1, 2)).view(gi2_tilde.shape[0],1,1)+eps)
-                    
-                        # print(gi1_tilde)
-                        # raise NotImplementedError
-                        # print("gi_tilde.shape = ",torch.norm(gi,p=float('inf'),dim=(1, 2)).shape,"\n","Embedding_in.shape = ",gi.shape)
                         noise1 += eta * gi1_tilde
                         noise2 += eta * gi2_tilde
-                    # model.load_state_dict(copy.deepcopy(theta_tilde_s))
                     logit,logit_wn,*rest = model.predict_paraphrase(b_ids1, b_mask1, b_ids2, b_mask2, noise1, noise2) 
-                    # model.load_state_dict(copy.deepcopy(theta_tilde_s))
                     prob = torch.sigmoid(logit)    # shape: (batch_size, 1)
                     prob_wn = torch.sigmoid(logit_wn)  # with noise
                     P1 = torch.cat([1 - prob, prob], dim=1)  # [P(not paraphrase), P(paraphrase)]
                     Q = torch.cat([1 - prob_wn, prob_wn], dim=1)
-
-                    # P1=F.softmax(logit, dim=1)
-                    # Q=F.softmax(logit_wn, dim=1)
 
                     KL_divergence_PQ = P1 * torch.log((P1 + eps) / (Q + eps))
                     KL_divergence_QP = Q * torch.log((Q + eps) / (P1 + eps))
@@ -837,33 +553,25 @@ def train_multitask(args):
                     max_ls,_=torch.max(ls,-1)
                     ls=ls.sum()
                     Rs=torch.sum(max_ls)/max_ls.shape[0]
-                    # model.load_state_dict(copy.deepcopy(theta_tilde_t))
                     logit2,*rest = model_copy.predict_paraphrase(b_ids1, b_mask1, b_ids2, b_mask2, noise1, noise2)
                     prob2 = torch.sigmoid(logit2)    # shape: (batch_size, 1)
                     P2 = torch.cat([1 - prob2, prob2], dim=1)  # [P(not paraphrase), P(paraphrase)]
-
-                    # P2=F.softmax(logit2, dim=1)
-                    # Q=F.softmax(logits_wn, dim=1)
                     KL_divergence_P1P2 = P1 * torch.log((P1 + eps) / (P2 + eps))
                     KL_divergence_P2P1 = P2 * torch.log((P2 + eps) / (P1 + eps))
                     ls2=KL_divergence_P1P2+KL_divergence_P2P1
                     D_Breg=ls2.sum()/args.batch_size
-                    # loss=F.binary_cross_entropy_with_logits(logit.squeeze(), b_labels.view(-1).float(), reduction='sum') / args.batch_size + lambda_s*Rs +mu*D_Breg
                     optimizer.zero_grad()
                     loss=F.binary_cross_entropy_with_logits(logit.squeeze(), b_labels.view(-1).float(), reduction='sum') / args.batch_size + lambda_s*Rs + mu*D_Breg
-                    # optimizer.zero_grad()
                     loss.backward()
                     optimizer.step()
                     theta_tilde_s=copy.deepcopy(model.state_dict())
                 theta_t=copy.deepcopy(theta_tilde_s)
-                # theta_t_tilde=(1-Beta)*theta_1_tilde_s+Beta*theta_t_tilde
                 theta_t_tilde = copy.deepcopy(theta_t)
                 for key in theta_tilde_s.keys():
                     theta_t_tilde[key] = (1 - Beta) * theta_tilde_s[key] + Beta * theta_t_tilde[key]
             else:
                 optimizer.zero_grad()
                 logit = model.predict_paraphrase(b_ids1, b_mask1, b_ids2, b_mask2)
-                # loss = model.paraphrase_simcse_loss(b_ids1, b_mask1,b_ids2, b_mask2,b_labels,pooling='cls',temperature=0.05)
                 loss = F.binary_cross_entropy_with_logits(logit.squeeze(), b_labels.view(-1).float(), reduction='sum') / args.batch_size
                 loss.backward()
                 optimizer.step()
@@ -899,10 +607,7 @@ def train_multitask(args):
 
     overall_perf=((dev_sts_corr+1)/2+sst_dev_acc+paraphrase_dev_acc)/3
     print('Overall Performance = ',overall_perf)
-    # overall_perf_f1=((dev_sts_corr+1)/2+sst_dev_f1+paraphrase_dev_f1)/3
-    # print('Overall Performance = ',overall_perf_f1)
     best_overall_perf=overall_perf
-    # raise NotImplementedError
 
     for i in range(10):
         lr = args.lr
@@ -950,55 +655,35 @@ def train_multitask(args):
                         noise2=noise2.to(device)
                         for m in range(0,Tx):
                             logit0,logit0_wn,Embedding_in1,Embedding_in2,Embedding_in1_wn,Embedding_in2_wn = model.predict_similarity(b_ids1, b_mask1, b_ids2, b_mask2, noise1, noise2)
-                            # model.load_state_dict(copy.deepcopy(theta_tilde_s))
-                            # P1=F.softmax(logit, dim=1)
-                            # Q=F.softmax(logit_wn, dim=1)
-                            # KL_divergence_PQ = P1 * torch.log((P1 + eps) / (Q + eps))
-                            # KL_divergence_QP = Q * torch.log((Q + eps) / (P1 + eps))
                             ls=(logit0_wn-logit0)**2
-                            # print(ls.shape)
-                            # raise NotImplementedError
                             max_ls=ls
                             ls=ls.sum()
                             Rs=torch.sum(max_ls)/max_ls.shape[0]
                             Embedding_in1_wn.retain_grad()
                             Embedding_in2_wn.retain_grad()
                             ls.backward(retain_graph=True) # retain_graph=True to allow backward being called again
-                            # gi=Embedding_in.grad.sum(dim=0)/Embedding_in.shape[0]
                             gi1=Embedding_in1_wn.grad/Embedding_in1_wn.shape[0]
                             gi2=Embedding_in2_wn.grad/Embedding_in2_wn.shape[0]
-                            # gi=gi.sum(dim=0)
-                            # print('\n\n',gi1.shape,'\n\n')
-                            # print('\n\n',torch.norm(gi1,p=float('inf'),dim=(1, 2)).view(gi1.shape[0],1,1).shape,'\n\n')
-                            # raise NotImplementedError
                             gi1_tilde=gi1/(torch.norm(gi1,p=float('inf'),dim=(1, 2)).view(gi1.shape[0],1,1)+eps)
                             gi2_tilde=gi2/(torch.norm(gi2,p=float('inf'),dim=(1, 2)).view(gi2.shape[0],1,1)+eps)
-                            # print(gi1_tilde)
-                            # raise NotImplementedError
                         
 
-                            # print("gi_tilde.shape = ",torch.norm(gi,p=float('inf'),dim=(1, 2)).shape,"\n","Embedding_in.shape = ",gi.shape)
                             noise1 = noise1.clone() + eta * gi1_tilde.clone()
                             noise2 = noise2.clone() + eta * gi2_tilde.clone()
-                        # model.load_state_dict(copy.deepcopy(theta_tilde_s))
                         logit,logit_wn,Embedding_in1_1,Embedding_in2_1,Embedding_in1_wn_1,Embedding_in2_wn_1 = model.predict_similarity(b_ids1, b_mask1, b_ids2, b_mask2, noise1, noise2) 
-                        # model.load_state_dict(copy.deepcopy(theta_tilde_s))
                         ls=(logit-logit_wn)**2
                         max_ls=ls
                         ls=ls.sum()
                         Rs=torch.sum(max_ls)/max_ls.shape[0]
-                        # model.load_state_dict(copy.deepcopy(theta_tilde_t))
                         logit2,logit2_wn,Embedding_in1_2,Embedding_in2_2,Embedding_in1_wn_2,Embedding_in2_wn_2 = model_copy.predict_similarity(b_ids1, b_mask1, b_ids2, b_mask2, noise1, noise2)
                         ls2=(logit2-logit)**2
                         D_Breg=ls2.sum()/args.batch_size
                         optimizer.zero_grad()
                         loss=F.mse_loss(logit, b_labels.view(-1).float(), reduction='sum') / args.batch_size + lambda_s*Rs +mu*D_Breg
-                        # optimizer.zero_grad()
                         loss.backward()
                         optimizer.step()
                         theta_tilde_s=copy.deepcopy(model.state_dict())
                     theta_t=copy.deepcopy(theta_tilde_s)
-                    # theta_t_tilde=(1-Beta)*theta_1_tilde_s+Beta*theta_t_tilde
                     theta_t_tilde = copy.deepcopy(theta_t)
                     for key in theta_tilde_s.keys():
                         theta_t_tilde[key] = (1 - Beta) * theta_tilde_s[key] + Beta * theta_t_tilde[key]
@@ -1008,20 +693,6 @@ def train_multitask(args):
                     loss = F.mse_loss(logit, b_labels.view(-1).float(), reduction='sum') / args.batch_size
                     loss.backward()
                     optimizer.step()
-            #     train_loss += loss.item()
-            #     num_batches += 1
-
-            # # train_loss = train_loss / (num_batches)
-
-            # # # train_sts_corr= model_eval_sts(sts_train_dataloader, model, device)
-            # # # dev_sts_corr= model_eval_sts(sts_dev_dataloader, model, device)
-
-            # # # if dev_sts_corr > best_sts_corr:
-            # # #     best_sts_corr = dev_sts_corr
-            # # #     # save_model(model, optimizer, args, config, args.filepath)
-
-            # # # print(f"Epoch {epoch}: train loss :: {train_loss :.3f}, train_sts_corr :: {train_sts_corr :.3f}, dev_sts_corr :: {dev_sts_corr :.3f}")
-
         paraphrase_dev_acc,paraphrase_dev_f1 = model_eval_paraphrase(para_dev_dataloader, model, device)
         dev_sts_corr= model_eval_sts(sts_dev_dataloader, model, device)
         sst_dev_acc, sst_dev_f1, *_ = model_eval_sst(sst_dev_dataloader, model, device)
@@ -1073,19 +744,15 @@ def train_multitask(args):
                 b_labels = b_labels.to(device)
                 if lambda_s!=0 or mu!=0:
                     theta_tilde_s=copy.deepcopy(theta_t)
-                    # optimizer.zero_grad()
                     if n==107:
                         Beta=0.999
                     n+=1
-                    # model_copy = copy.deepcopy(model)
                     model_copy.load_state_dict(theta_tilde_t)
                     for s in range(0,S):
-                        # model.load_state_dict(copy.deepcopy(theta_tilde_s))
                         noise = torch.randn(b_ids.shape[0], b_ids.shape[1], 768)*std+mean
                         noise=noise.to(device)
                         for m in range(0,Tx):
                             logits,logits_wn,Embedding_in,Embedding_in_wn = model.predict_sentiment(b_ids,b_mask,noise)
-                            # model.load_state_dict(copy.deepcopy(theta_tilde_s))
                             P1=F.softmax(logits, dim=1)
                             Q=F.softmax(logits_wn, dim=1)
                             KL_divergence_PQ = P1 * torch.log((P1 + eps) / (Q + eps))
@@ -1096,16 +763,10 @@ def train_multitask(args):
                             Rs=torch.sum(max_ls)/max_ls.shape[0]
                             Embedding_in_wn.retain_grad()
                             ls.backward(retain_graph=True) # retain_graph=True to allow backward being called again
-                            # gi=Embedding_in.grad.sum(dim=0)/Embedding_in.shape[0]
                             gi=Embedding_in_wn.grad/Embedding_in_wn.shape[0]
-                            # gi=gi.sum(dim=0)
-                            # print('\n\n',gi.shape,'\n\n')
                             gi_tilde=gi/(torch.norm(gi,p=float('inf'),dim=(1, 2)).view(gi.shape[0],1,1)+eps)
-                            # print("gi_tilde.shape = ",torch.norm(gi,p=float('inf'),dim=(1, 2)).shape,"\n","Embedding_in.shape = ",gi.shape)
                             noise = noise.clone() + eta * gi_tilde.clone()
-                        # model.load_state_dict(copy.deepcopy(theta_tilde_s))
                         logits,logits_wn,Embedding_in,Embedding_in_wn = model.predict_sentiment(b_ids,b_mask,noise)
-                        # model.load_state_dict(copy.deepcopy(theta_tilde_s))
                         P1=F.softmax(logits, dim=1)
                         Q=F.softmax(logits_wn, dim=1)
                         KL_divergence_PQ = P1 * torch.log((P1 + eps) / (Q + eps))
@@ -1114,22 +775,18 @@ def train_multitask(args):
                         max_ls,_=torch.max(ls,-1)
                         ls=ls.sum()
                         Rs=torch.sum(max_ls)/max_ls.shape[0]
-                        # model.load_state_dict(copy.deepcopy(theta_tilde_t))
                         logits2,logits2_wn,Embedding_in_2,Embedding_in_wn_2 = model_copy.predict_sentiment(b_ids,b_mask,noise)
                         P2=F.softmax(logits, dim=1)
-                        # Q=F.softmax(logits_wn, dim=1)
                         KL_divergence_P1P2 = P1 * torch.log((P1 + eps) / (P2 + eps))
                         KL_divergence_P2P1 = P2 * torch.log((P2 + eps) / (P1 + eps))
                         ls2=KL_divergence_P1P2+KL_divergence_P2P1
                         D_Breg=ls2.sum()/args.batch_size
                         optimizer.zero_grad()
                         loss=F.cross_entropy(logits, b_labels.view(-1), reduction='sum') / args.batch_size + lambda_s*Rs +mu*D_Breg
-                        # optimizer.zero_grad()
                         loss.backward()
                         optimizer.step()
                         theta_tilde_s=copy.deepcopy(model.state_dict())
                     theta_t=copy.deepcopy(theta_tilde_s)
-                    # theta_t_tilde=(1-Beta)*theta_1_tilde_s+Beta*theta_t_tilde
                     theta_t_tilde = copy.deepcopy(theta_t)
                     for key in theta_tilde_s.keys():
                         theta_t_tilde[key] = (1 - Beta) * theta_tilde_s[key] + Beta * theta_t_tilde[key]
@@ -1139,19 +796,6 @@ def train_multitask(args):
                     loss = F.cross_entropy(logits, b_labels.view(-1), reduction='sum') / args.batch_size
                     loss.backward()
                     optimizer.step()
-            #     train_loss += loss.item()
-            #     num_batches += 1
-
-            # train_loss = train_loss / (num_batches)
-
-            # sst_train_acc, sst_train_f1, *_ = model_eval_sst(sst_train_dataloader, model, device)
-            # sst_dev_acc, sst_dev_f1, *_ = model_eval_sst(sst_dev_dataloader, model, device)
-
-            # if sst_dev_acc > best_sst_dev_acc:
-            #     best_sst_dev_acc = sst_dev_acc
-            #     save_model(model, optimizer, args, config, args.filepath)
-
-            # print(f"Epoch {epoch}: train loss :: {train_loss :.3f}, sst train acc :: {sst_train_acc :.3f}, sst dev acc :: {sst_dev_acc :.3f}")
         paraphrase_dev_acc,paraphrase_dev_f1 = model_eval_paraphrase(para_dev_dataloader, model, device)
         dev_sts_corr= model_eval_sts(sts_dev_dataloader, model, device)
         sst_dev_acc, sst_dev_f1, *_ = model_eval_sst(sst_dev_dataloader, model, device)
@@ -1262,23 +906,9 @@ def train_multitask(args):
                 else:
                     optimizer.zero_grad()
                     logit = model.predict_paraphrase(b_ids1, b_mask1, b_ids2, b_mask2)
-                    # loss = model.paraphrase_simcse_loss(b_ids1, b_mask1,b_ids2, b_mask2,b_labels,pooling='cls',temperature=0.05)
                     loss = F.binary_cross_entropy_with_logits(logit.squeeze(), b_labels.view(-1).float(), reduction='sum') / args.batch_size
                     loss.backward()
                     optimizer.step()
-            #     train_loss += loss.item()
-            #     num_batches += 1
-            # train_loss = train_loss / (num_batches)
-
-
-            # paraphrase_train_acc = model_eval_paraphrase(para_train_dataloader, model, device)
-            # paraphrase_dev_acc = model_eval_paraphrase(para_dev_dataloader, model, device)
-
-            # if paraphrase_dev_acc > best_paraphrase_dev_acc:
-            #     best_paraphrase_dev_acc = paraphrase_dev_acc
-            #     save_model(model, optimizer, args, config, args.filepath)
-
-            # print(f"Epoch {epoch}: train loss :: {train_loss :.3f}, paraphrase train acc :: {paraphrase_train_acc :.3f}, paraphrase dev acc :: {paraphrase_dev_acc :.3f}")
         paraphrase_dev_acc,paraphrase_dev_f1 = model_eval_paraphrase(para_dev_dataloader, model, device)
         dev_sts_corr= model_eval_sts(sts_dev_dataloader, model, device)
         sst_dev_acc, sst_dev_f1, *_ = model_eval_sst(sst_dev_dataloader, model, device)
@@ -1300,7 +930,6 @@ def train_multitask(args):
 
 def manual_test(args):
     device = torch.device('cuda') if args.use_gpu else torch.device('cpu')
-    # Init model.
     num_labels=1
     config = {'hidden_dropout_prob': args.hidden_dropout_prob,
               'num_labels': num_labels,
@@ -1317,15 +946,12 @@ def manual_test(args):
     BT=BertTokenizer.from_pretrained('bert-base-uncased')
     while(1):
         Task=input("Which Task? (choose one from sst5,qqp,stsb)")
-        # label=input("Enter actual result: ")
         if Task=="sst5":
             Sentence=input("Enter Sentence: ")
             encoding = BT(Sentence, return_tensors='pt', padding=True, truncation=True)
             token_ids = torch.LongTensor(encoding['input_ids']).to(device)
             attention_mask = torch.LongTensor(encoding['attention_mask']).to(device)
-            # label = torch.LongTensor([int(label)])
             pred_label=torch.argmax(model.predict_sentiment(token_ids,attention_mask),dim=1)
-            # print("predicted label = ", pred_label.item())
             if pred_label==0:
                 print("The Sentence is very negative")
             elif pred_label==1:
@@ -1348,9 +974,7 @@ def manual_test(args):
             token_ids2 = torch.LongTensor(encoding2['input_ids']).to(device)
             attention_mask2 = torch.LongTensor(encoding2['attention_mask']).to(device)
 
-            # label = torch.LongTensor([int(label)])
             pred_label=model.predict_paraphrase(token_ids1,attention_mask1,token_ids2,attention_mask2).sigmoid().round()
-            # print("predicted label = ", pred_label.item())
             if pred_label==0:
                 print("This pair IS NOT Paraphrase")
             elif pred_label==1:
@@ -1367,7 +991,6 @@ def manual_test(args):
             token_ids2 = torch.LongTensor(encoding2['input_ids']).to(device)
             attention_mask2 = torch.LongTensor(encoding2['attention_mask']).to(device)
 
-            # label = torch.LongTensor([int(label)])
             pred_label=model.predict_similarity(token_ids1,attention_mask1,token_ids2,attention_mask2)
             print("Similarity between the two sentences on a scale from 0 to 5 = ", pred_label.item())
             if pred_label>=0 and pred_label<1:
