@@ -1,0 +1,121 @@
+\chapter{Possible Improvements (Areesha Noor)}
+\label{Chapter6}
+\lhead{Chapter 6. \emph{Possible Improvements}}
+
+% The Quora Question Pairs (QQP) dataset is imbalanced, with approximately 63\% of the examples labeled as non-duplicates and 37\% as duplicates in both the training and validation splits. Despite this imbalance, we used accuracy as the primary evaluation metric and based all model selection and checkpointing decisions on it. 
+
+% To better account for class imbalance, we also computed the F$_1$ score, which combines precision and recall to provide a more balanced view of binary classification performance. However, we did not use it for selecting the best model.
+
+% The definitions are as follows:
+% \begin{align}
+% \text{Precision} &= \frac{\text{TP}}{\text{TP} + \text{FP}}, \\
+% \text{Recall}    &= \frac{\text{TP}}{\text{TP} + \text{FN}}, \\
+% F_1              &= 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}},
+% \end{align}
+% where TP, FP, and FN represent the number of true positives, false positives, and false negatives, respectively.
+
+% \section{Class Imbalance in SST-5}
+% Similar to the Quora Question Pairs dataset, the SST-5 dataset is also imbalanced, where the class distribution changes significantly across five sentiment categories. In the training split dataset, the most frequent classes are \textit{Positive} and \textit{Negative}, making 27.4\% and 26\% of the total dataset respectively. Whereas, \textit{Very Positive} and \textit{Very Negative} classes contain only 15.1\% and 12.8\% of the total data.
+
+% \section{Need for Weighted F1 Score}
+% Given the imbalanced class distribution, using accuracy as a metric may not provide an accurate assessment of the model's performance as it could heavily rely on majority classes. Therefore, similar to the Quora Question Pairs dataset, we use the sample-weighted F1 score for SST-5 to better evaluate performance across all classes. This metric combines two important competing metrics:
+
+% \begin{align*}
+% \text{Precision} &= \frac{TP}{TP + FP} \\
+% \text{Recall} &= \frac{TP}{TP + FN}
+% \end{align*}
+
+% where:
+% \begin{itemize}
+%     \item $TP$ is the number of true positives
+%     \item $FP$ is the number of false positives
+%     \item $FN$ is the number of false negatives
+% \end{itemize}
+
+% \section{Calculating Weighted F1 Score}
+% The sample-weighted F1 score helps by weighing each class's F1 score based on its true instances. The calculation involves two steps:
+
+% \subsection{Class-wise F1 Scores}
+% First, we compute F1 scores for each class individually:
+% \[
+% F1_i = 2 \times \frac{\text{Precision}_i \times \text{Recall}_i}{\text{Precision}_i + \text{Recall}_i}
+% \]
+
+% \subsection{Weighted Average}
+% Then, we calculate the weighted average across all classes:
+% \[
+% \text{Weighted F1 Score} = \sum_{i=1}^{N} w_i \times F1_i
+% \]
+% where $w_i = \frac{\text{Number of samples in class } i}{\text{Total number of samples}}$.
+
+% \section{Python Implementation}
+% In our implementation, we modified the evaluation function by changing:
+% \begin{verbatim}
+% f1_score(y_true, y_pred, average='macro')
+% \end{verbatim}
+% to:
+% \begin{verbatim}
+% f1_score(y_true, y_pred, average='weighted')
+% \end{verbatim}
+
+% This change makes the function:
+% \begin{itemize}
+%     \item Compute class-wise F1 scores
+%     \item Weight them by their class support (number of true instances)
+%     \item Provide more realistic performance metrics for imbalanced datasets
+% \end{itemize}
+
+% The weighted F1 score proves particularly suitable for imbalanced datasets like SST-5 and Quora Question Pairs, as it provides more balanced evaluation performance by appropriately weighting each class's contribution.
+
+The Quora Question Pairs (QQP) dataset used is imbalanced, containing approximately 63\% of the examples labeled as non-duplicates and 37\% as duplicates, in both training and validation splits. Despite this imbalance, we used \textbf{accuracy} as the primary evaluation metric and based our model selection on it. This is mainly to make a fair comparison among our models, as state-of-the-art results also use this metric.
+
+To better account for class imbalance, the accuracy metric may not be a reliable metric as it provides an overall performance score. Instead, we can focus on computing the \textbf{sample-weighted F1 score}.
+
+Similar to the Quora Question Pairs dataset, the SST-5 dataset is also imbalanced, where the class distribution changes significantly across five sentiment categories. In the training split dataset, the most frequent classes are \textit{Positive} and \textit{Negative}, making up 27.4\% and 26\% of the total dataset, respectively. Meanwhile, \textit{Very Positive} and \textit{Very Negative} classes contain only 15.1\% and 12.8\% of the total data, respectively.
+
+Given the imbalanced class distribution for the above datasets, using the accuracy metric may not provide an accurate assessment of a model's performance, as it could heavily rely on majority classes. So, like the QQP dataset, here also, the \textbf{sample-weighted F1 score} could be used for the SST-5 dataset to better evaluate performance across all classes. It considers two competing metrics: precision and recall.
+
+\begin{align*}
+\text{Precision} &= \frac{TP}{TP + FP} \\
+\text{Recall} &= \frac{TP}{TP + FN}
+\end{align*}
+
+\noindent where:
+\begin{itemize}
+    \item TP is the number of true positives
+    \item FP is the number of false positives
+    \item FN is the number of false negatives
+\end{itemize}
+
+Sample F1 score helps by weighing the F1 score for each class on the basis of its true instances. First, we compute class-wise F1 scores as:
+
+\[
+F1 = \frac{2 \times \text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}
+\]
+
+Then, we take the weighted average of F1 scores for all classes as:
+
+\[
+\text{Weighted F1 Score} = \sum_{i=1}^{N} w_i \times F1_i
+\]
+
+\noindent where:
+\[
+w_i = \frac{\text{Number of samples in class } i}{\text{Total number of samples}}
+\]
+
+Here, the sample-weighted F1 score provides a more balanced evaluation by equitably weighing each class and thus proves more suitable for imbalanced datasets like SST-5.
+
+In our Python implementation, we modified one parameter in the evaluation function by changing:
+
+\begin{verbatim}
+f1_score(y_true, y_pred, average='macro')
+\end{verbatim}
+
+to
+
+\begin{verbatim}
+f1_score(y_true, y_pred, average='weighted')
+\end{verbatim}
+
+This computes class-wise F1 scores and then multiplies them by their weights (number of true instances). This approach helps in providing more realistic performance evaluation in the case of imbalanced datasets like SST-5 or Quora Question Pairs.

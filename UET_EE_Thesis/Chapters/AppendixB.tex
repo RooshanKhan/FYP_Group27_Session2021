@@ -1,0 +1,268 @@
+% Appendix B (Portion for Abdul Samad)
+
+\chapter{Implementation of Supervised SimCSE in Python (Abdul Samad)}
+\label{AppendixB}
+\lhead{Appendix A. \emph{Implementation of Supervised SimCSE in Python}}
+
+\section{Supervised SimCSE}
+This section describes the implementation of Supervised SimCSE for contrastive learning using the SNLI dataset, including data preprocessing, triplet contrastive loss, and the training loop.
+
+\subsection{SNLI Dataset Preprocessing}
+To adapt the SNLI dataset for contrastive learning, we extract only the \textbf{entailment} (label = 0) and \textbf{contradiction} (label = 2) examples, ignoring \textbf{neutral} (label = 1) examples due to their lack of strong positive or negative signals. Each training instance is converted into a triplet: the premise as the anchor, the entailment hypothesis as the positive, and the contradiction hypothesis as the negative. Listing~\ref{lst:snli_preprocess} shows the preprocessing code.
+
+\begin{lstlisting}[language=Python, caption={Preprocessing SNLI Dataset}, label={lst:snli_preprocess}, basicstyle=\ttfamily\small, keywordstyle=\color{blue}, commentstyle=\color{green}, stringstyle=\color{red},linewidth=\textwidth]
+import pandas as pd
+
+# Load the SNLI CSV
+df = pd.read_csv("snli-train.csv")
+
+# Keep only entailment (0) and contradiction (2)
+df = df[df['label'].isin([0, 2])]
+
+# Separate positive and negative examples
+positives = df[df['label'] == 0][['premise', 'hypothesis']].rename(columns={'hypothesis': 'positive_sentence'})
+negatives = df[df['label'] == 2][['premise', 'hypothesis']].rename(columns={'hypothesis': 'negative_sentence'})
+
+# Merge on 'premise' to form triplets
+merged = pd.merge(positives, negatives, on='premise')
+
+# Save triplet format
+merged.to_csv("snli_processed.csv", index=False, encoding='utf-8')
+print("New CSV file 'snli_processed.csv' created successfully.")
+\end{lstlisting}
+
+\subsection{Triplet Contrastive Loss for SimCSE}
+The Supervised SimCSE objective maximizes the similarity between anchor and positive embeddings while minimizing it between anchor and negative embeddings. Given embeddings $a_i$ (anchor: premise), $p_i$ (positive: entailment hypothesis), and $n_i$ (negative: contradiction hypothesis), all $\ell_2$-normalized, we compute cosine similarities:
+\[
+s^+_i = a_i^\top p_i, \quad s^-_i = a_i^\top n_i
+\]
+A temperature-scaled softmax is applied:
+\[
+P_i = \frac{\exp(s^+_i / \tau)}{\exp(s^+_i / \tau) + \exp(s^-_i / \tau)}
+\]
+The instance-wise loss is:
+\[
+\mathcal{L}_i = -\log P_i
+\]
+The batch loss is the average:
+\[
+\mathcal{L} = \frac{1}{N} \sum_{i=1}^N \mathcal{L}_i
+\]
+This loss pulls $p_i$ closer to $a_i$ and pushes $n_i$ away.
+
+\subsection{Supervised SimCSE Loss Implementation}
+Listing~\ref{lst:simcse_loss} implements the Supervised SimCSE loss within the \texttt{MultitaskBERT} class. It encodes the triplet inputs, applies mean pooling (or CLS pooling), normalizes embeddings, computes cosine similarities, and calculates the contrastive loss.
+
+\begin{lstlisting}[language=Python, caption={Supervised SimCSE Loss}, label={lst:simcse_loss}, basicstyle=\ttfamily\small, keywordstyle=\color{blue}, commentstyle=\color{green}, stringstyle=\color{red},linewidth=\textwidth]
+class MultitaskBERT(nn.Module):
+    def supervised_simcse_loss(self, input_ids_1, attention_mask_1,
+                               input_ids_2, attention_mask_2,
+                               input_ids_3, attention_mask_3,
+                               pooling='mean', temperature=0.05):
+        # Encode triplet input
+        embedding_output1 = self.forward(input_ids_1, attention_mask_1)
+        embedding_output2 = self.forward(input_ids_2, attention_mask_2)
+        embedding_output3 = self.forward(input_ids_3, attention_mask_3)
+
+        if pooling == 'mean':
+            hidden_state1 = embedding_output1['last_hidden_state']
+            hidden_state2 = embedding_output2['last_hidden_state']
+            hidden_state3 = embedding_output3['last_hidden_state']
+
+            mask1 = attention_mask_1.unsqueeze(-1).expand_as(hidden_state1).float()
+            mask2 = attention_mask_2.unsqueeze(-1).expand_as(hidden_state2).float()
+            mask3 = attention_mask_3.unsqueeze(-1).expand_as(hidden_state3).float()
+
+            denom1 = torch.sum(mask1, dim=1).unsqueeze(-1)
+            denom2 = torch.sum(mask2, dim=1).unsqueeze(-1)
+            denom3 = torch.sum(mask3, dim=1).unsqueeze(-1)
+
+            vector1 = torch.sum(mask1 * hidden_state1, dim=1) / denom1
+            vector2 = torch.sum(mask2 * hidden_state2, dim=1) / denom2
+            vector3 = torch.sum(mask3 * hidden_state3, dim=1) / denom3
+        elif pooling == 'cls':
+            vector1 = embedding_output1['pooler_output']
+            vector2 = embedding_output2['pooler_output']
+            vector3 = embedding_output3['pooler_output']
+
+        anchor = self.dropout_layer(vector1)
+        positive = self.dropout_layer(vector2)
+        negative = self.dropout_layer(vector3)
+
+        anchor = F.normalize(anchor, dim=-1)
+        positive = F.normalize(positive, dim=-1)
+        negative = F.normalize(negative, dim=-1)
+
+        sim_ap = torch.matmul(anchor, positive.T) / temperature
+        sim_an = torch.matmul(anchor, negative.T) / temperature
+
+        exp_ap = torch.exp(torch.diag(sim_ap))
+        denom = exp_ap + torch.exp(sim_an)
+
+        loss = -torch.log(exp_ap / denom)
+        return loss.mean()
+\end{lstlisting}
+
+\subsection{Training Loop for Supervised SimCSE}
+Listing~\ref{lst:simcse_train} shows the training loop for Supervised SimCSE using the SNLI triplet data. The model is trained with the AdamW optimizer, and performance is evaluated on both the SNLI development set and the STS dataset, saving the model when the STS development correlation improves.
+
+\begin{lstlisting}[language=Python, caption={Training SimCSE with Triplet SNLI Data}, label={lst:simcse_train}, basicstyle=\ttfamily\small, keywordstyle=\color{blue}, commentstyle=\color{green}, stringstyle=\color{red},linewidth=\textwidth]
+optimizer = AdamW(model.parameters(), lr=args.lr)
+
+for epoch in range(args.epochs):
+    model.train()
+    simcse_train_loss = 0
+    num_batches = 0
+
+    for batch in tqdm(snli_train_dataloader, desc=f'SimCSE-{epoch}'):
+        b_ids1, b_mask1 = batch['token_ids_1'].to(device), batch['attention_mask_1'].to(device)
+        b_ids2, b_mask2 = batch['token_ids_2'].to(device), batch['attention_mask_2'].to(device)
+        b_ids3, b_mask3 = batch['token_ids_3'].to(device), batch['attention_mask_3'].to(device)
+
+        optimizer.zero_grad()
+        loss = model.supervised_simcse_loss(b_ids1, b_mask1, b_ids2, b_mask2, b_ids3, b_mask3)
+        loss.backward()
+        optimizer.step()
+
+        simcse_train_loss += loss.item()
+        num_batches += 1
+
+    simcse_train_loss /= num_batches
+    simcse_dev_acc = model_eval_simcse(snli_dev_dataloader, model, device)
+
+    # Evaluate on STS
+    dev_sts_corr = model_eval_sts(sts_dev_dataloader, model, device)
+    if dev_sts_corr > best_sts_corr:
+        best_sts_corr = dev_sts_corr
+        save_model(model, optimizer, args, config_args, f"SimCSE-{epoch}")
+
+    print(f"Epoch {epoch}: simcse train loss :: {simcse_train_loss :.3f}, simcse dev acc :: {simcse_dev_acc :.3f}, dev sts corr :: {dev_sts_corr :.3f}")
+\end{lstlisting}
+
+\subsection{SNLI Dataset Preparation}
+To prepare the SNLI dataset for training, we implemented custom dataset classes to handle the triplet structure and tokenization. Listing~\ref{lst:snli_dataset} shows the \texttt{TrainSNLIDataSet} and \texttt{SNLIDataSet} classes. \texttt{TrainSNLIDataSet} processes triplets (premise, positive, negative) for contrastive learning, tokenizing each sentence using the BERT tokenizer and returning padded token IDs, attention masks, and token type IDs for all three inputs. \texttt{SNLIDataSet} handles paired data (e.g., for STS or QQP tasks), tokenizing two sentences and optionally converting labels to regression or classification format. Both classes include a \texttt{collate\_fn} method to batch and pad the data for efficient training.
+
+\begin{lstlisting}[language=Python, caption={SNLI Dataset Classes}, label={lst:snli_dataset}, basicstyle=\ttfamily\small, keywordstyle=\color{blue}, commentstyle=\color{green}, stringstyle=\color{red},linewidth=\textwidth]
+class TrainSNLIDataSet(Dataset):
+    def _init_(self, dataset, args):
+        self.dataset = dataset
+        self.p = args
+        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+
+    def _len_(self):
+        return len(self.dataset)
+
+    def _getitem_(self, idx):
+        return self.dataset[idx]
+
+    def pad_data(self, data):
+        sent1 = [x[0] for x in data]
+        sent2 = [x[1] for x in data]
+        sent3 = [x[2] for x in data]
+        
+        encoding1 = self.tokenizer(
+                sent1,
+                return_tensors='pt',
+                padding=True,
+                truncation=True
+            )
+        token_ids = torch.LongTensor(encoding1['input_ids'])
+        attention_mask = torch.LongTensor(encoding1['attention_mask'])
+        token_type_ids = torch.LongTensor(encoding1['token_type_ids'])
+
+        encoding2 = self.tokenizer(
+            sent2,
+            return_tensors='pt',
+            padding=True,
+            truncation=True
+        )
+        token_ids2 = torch.LongTensor(encoding2['input_ids'])
+        attention_mask2 = torch.LongTensor(encoding2['attention_mask'])
+        token_type_ids2 = torch.LongTensor(encoding2['token_type_ids'])
+
+        encoding3 = self.tokenizer(
+            sent3,
+            return_tensors='pt',
+            padding=True,
+            truncation=True
+        )
+        token_ids3 = torch.LongTensor(encoding3['input_ids'])
+        attention_mask3 = torch.LongTensor(encoding3['attention_mask'])
+        token_type_ids3 = torch.LongTensor(encoding3['token_type_ids'])
+
+        return (token_ids, token_type_ids, attention_mask,
+                token_ids2, token_type_ids2, attention_mask2,
+                token_ids3, token_type_ids3, attention_mask3)
+
+    def collate_fn(self, all_data):
+        (token_ids, token_type_ids, attention_mask,
+         token_ids2, token_type_ids2, attention_mask2,
+         token_ids3, token_type_ids3, attention_mask3) = self.pad_data(all_data)
+
+        batched_data = {
+            'token_ids_1': token_ids,
+            'token_type_ids_1': token_type_ids,
+            'attention_mask_1': attention_mask,
+            'token_ids_2': token_ids2,
+            'token_type_ids_2': token_type_ids2,
+            'attention_mask_2': attention_mask2,
+            'token_ids_3': token_ids3,
+            'token_type_ids_3': token_type_ids3,
+            'attention_mask_3': attention_mask3
+        }
+
+        return batched_data
+
+class SNLIDataSet(Dataset):
+    def _init_(self, dataset, args, isRegression=False):
+        self.dataset = dataset
+        self.p = args
+        self.isRegression = isRegression
+        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+
+    def _len_(self):
+        return len(self.dataset)
+
+    def _getitem_(self, idx):
+        return self.dataset[idx]
+
+    def pad_data(self, data):
+        sent1 = [x[0] for x in data]
+        sent2 = [x[1] for x in data]
+        labels = [x[2] for x in data]
+
+        encoding1 = self.tokenizer(sent1, return_tensors='pt', padding=True, truncation=True)
+        encoding2 = self.tokenizer(sent2, return_tensors='pt', padding=True, truncation=True)
+
+        token_ids = torch.LongTensor(encoding1['input_ids'])
+        attention_mask = torch.LongTensor(encoding1['attention_mask'])
+        token_type_ids = torch.LongTensor(encoding1['token_type_ids'])
+
+        token_ids2 = torch.LongTensor(encoding2['input_ids'])
+        attention_mask2 = torch.LongTensor(encoding2['attention_mask'])
+        token_type_ids2 = torch.LongTensor(encoding2['token_type_ids'])
+        if self.isRegression:
+            labels = torch.DoubleTensor(labels)
+        else:
+            labels = torch.LongTensor(labels)
+
+        return (token_ids, token_type_ids, attention_mask,
+                token_ids2, token_type_ids2, attention_mask2,
+                labels)
+
+    def collate_fn(self, all_data):
+        (token_ids, token_type_ids, attention_mask,
+         token_ids2, token_type_ids2, attention_mask2,
+         labels) = self.pad_data(all_data)
+
+        batched_data = {
+                'token_ids_1': token_ids,
+                'token_type_ids_1': token_type_ids,
+                'attention_mask_1': attention_mask,
+                'token_ids_2': token_ids2,
+                'token_type_ids_2': token_type_ids2,
+                'attention_mask_2': attention_mask2,
+                'labels': labels
+            }
+        return batched_data
+\end{lstlisting}

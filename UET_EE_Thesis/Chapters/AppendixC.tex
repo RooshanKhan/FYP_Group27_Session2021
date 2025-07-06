@@ -1,0 +1,10 @@
+% Appendix C (Portion for Hussnain Amjad)
+
+\chapter{SBERT Implementation for Paraphrase Detection and Semantic Similarity (Hussnain Amjad)}
+\label{AppendixC}
+\lhead{Appendix C. \emph{Implementation of Supervised SimCSE in Python}}
+
+
+% Overview section
+\section{Overview}
+This appendix presents the Sentence-BERT (SBERT) implementation for paraphrase detection and semantic textual similarity (STS) tasks. SBERT enhances BERT by employing a siamese network to produce sentence embeddings optimized for sentence-level tasks. The code for the \texttt{predict\_similarity} and \texttt{predict\_paraphrase} methods is provided in Appendix~\ref{AppendixA} (Listings~\ref{lst:predict_similarity} and~\ref{lst:predict_paraphrase}), integrated into the \texttt{MultitaskBERT} class. In Listing~\ref{lst:predict_similarity}, we did not use any linear layer; instead, we used cosine similarity for the STS task, as recommended for regression tasks in \textit{Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks} by Reimers and Gurevych~\cite{reimers2019sentence}. For paraphrase detection, the concatenation of sentence embeddings was performed, as suggested in the same paper. For both tasks, we set mean pooling as the default and used it during training. The attention mask was applied to obtain mean embeddings from the last layer of BERT, ensuring that embeddings corresponding to padding tokens were excluded from the mean embedding calculation. The cosine similarity for Semantic Textual Similarity Task is scaled to be between 0 and 5.

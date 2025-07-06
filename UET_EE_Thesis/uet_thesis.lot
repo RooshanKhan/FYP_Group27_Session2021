@@ -1,0 +1,26 @@
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {1.1}{\ignorespaces Tasks and Ratings for simple BERT model without finetuning}}{2}{table.caption.17}%
+\contentsline {table}{\numberline {1.2}{\ignorespaces Dataset splits used for training, validation, and testing.}}{3}{table.caption.22}%
+\contentsline {table}{\numberline {1.3}{\ignorespaces Evaluation metrics for the tasks}}{3}{table.caption.25}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces WordPiece Tokenization}}{6}{table.caption.33}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces Quantitative Result of Phase 1. Accuracy comparison of BERT on SST and CFIMDB.}}{18}{table.caption.75}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Best performance of separate models fine-tuned individually for each task}}{22}{table.caption.82}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Development set performance before fine-tuning}}{22}{table.caption.85}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Development set performance after fine-tuning on Paraphrase Detection for 3 epochs}}{23}{table.caption.87}%
+\contentsline {table}{\numberline {4.5}{\ignorespaces Development set performance after fine-tuning on the STS task}}{24}{table.caption.89}%
+\contentsline {table}{\numberline {4.6}{\ignorespaces Development set performance after fine-tuning for 10 epochs on SST}}{24}{table.caption.91}%
+\contentsline {table}{\numberline {4.7}{\ignorespaces Development set performance after fine-tuning on Paraphrase Detection for 1 epoch}}{25}{table.caption.93}%
+\contentsline {table}{\numberline {4.8}{\ignorespaces Development set performance after fine-tuning for 10 epochs on STS}}{26}{table.caption.95}%
+\contentsline {table}{\numberline {4.9}{\ignorespaces Development set performance after fine-tuning for 10 epochs on SST}}{26}{table.caption.97}%
+\contentsline {table}{\numberline {4.10}{\ignorespaces Evaluation metrics for each task (SMART+SBERT)}}{27}{table.caption.103}%
+\contentsline {table}{\numberline {4.11}{\ignorespaces Evaluation metrics for each task (SBERT Only)}}{27}{table.caption.104}%
+\contentsline {table}{\numberline {4.12}{\ignorespaces Evaluation metrics for each task}}{28}{table.caption.106}%
+\contentsline {table}{\numberline {4.13}{\ignorespaces Evaluation metrics for each task}}{28}{table.caption.107}%
+\contentsline {table}{\numberline {4.14}{\ignorespaces State-of-the-art BERT-base results for each task}}{29}{table.caption.109}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }

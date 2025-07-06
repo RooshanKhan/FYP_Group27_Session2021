@@ -1,0 +1,82 @@
+\begin{thebibliography}{11}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Devlin et~al.(2018)Devlin, Chang, Lee, and Toutanova]{devlin2018bert}
+Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova.
+\newblock Bert: Pre-training of deep bidirectional transformers for language
+  understanding.
+\newblock \emph{arXiv preprint arXiv:1810.04805}, 2018.
+
+\bibitem[Gao et~al.(2021)Gao, Yao, and Chen]{gao2021simcse}
+Tianyu Gao, Xingcheng Yao, and Danqi Chen.
+\newblock Simcse: Simple contrastive learning of sentence embeddings.
+\newblock \emph{arXiv preprint arXiv:2104.08821}, 2021.
+
+\bibitem[Jiang et~al.(2019)Jiang, He, Chen, Wang, Song, and
+  Zemel]{jiang2019smart}
+Haoming Jiang, Di~He, Aniruddha Chen, Qipeng~Guo Wang, Ming Song, and Richard
+  Zemel.
+\newblock Smart: Robust and efficient fine-tuning for pre-trained natural
+  language models through principled regularized optimization.
+\newblock \emph{arXiv preprint arXiv:1911.03437}, 2019.
+
+\bibitem[Mahankali et~al.(2024)]{amahankali2024}
+Akhil Mahankali et~al.
+\newblock Cs224n spring 2024 dfp student handout.
+\newblock
+  \url{https://github.com/amahankali10/CS224N-Spring2024-DFP-Student-Handout},
+  2024.
+\newblock GitHub repository, accessed: 2025-05-29.
+
+\bibitem[Mikolov et~al.(2013)Mikolov, Chen, Corrado, and
+  Dean]{mikolov2013efficient}
+Tomas Mikolov, Kai Chen, Greg Corrado, and Jeffrey Dean.
+\newblock Efficient estimation of word representations in vector space.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2013.
+
+\bibitem[{Papers with Code}(2024)]{paperswithcode}
+{Papers with Code}.
+\newblock Papers with code, 2024.
+\newblock URL \url{https://www.paperswithcode.com}.
+\newblock Accessed: 2025-05-12.
+
+\bibitem[Pennington et~al.(2014)Pennington, Socher, and
+  Manning]{pennington2014glove}
+Jeffrey Pennington, Richard Socher, and Christopher Manning.
+\newblock Glove: Global vectors for word representation.
+\newblock In \emph{Proceedings of the 2014 Conference on Empirical Methods in
+  Natural Language Processing (EMNLP)}, pages 1532--1543, 2014.
+
+\bibitem[Rajpurkar et~al.(2016)Rajpurkar, Zhang, Lopyrev, and
+  Liang]{rajpurkar2016squad}
+Pranav Rajpurkar, Jian Zhang, Konstantin Lopyrev, and Percy Liang.
+\newblock Squad: 100,000+ questions for machine comprehension of text.
+\newblock In \emph{Proceedings of the 2016 Conference on Empirical Methods in
+  Natural Language Processing (EMNLP)}, pages 2383--2392, 2016.
+
+\bibitem[Reimers and Gurevych(2019)]{reimers2019sentence}
+Nils Reimers and Iryna Gurevych.
+\newblock Sentence-bert: Sentence embeddings using siamese bert-networks.
+\newblock \emph{arXiv preprint arXiv:1908.10084}, 2019.
+
+\bibitem[{Stanford University}(2024)]{cs224n2024}
+{Stanford University}.
+\newblock {CS224n: Natural Language Processing with Deep Learning}, 2024.
+\newblock URL
+  \url{https://web.stanford.edu/class/archive/cs/cs224n/cs224n.1246/}.
+\newblock Accessed: 2025-05-29.
+
+\bibitem[Vaswani et~al.(2017)Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez,
+  Kaiser, and Polosukhin]{vaswani2017attention}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
+  Aidan~N Gomez, Lukasz Kaiser, and Illia Polosukhin.
+\newblock Attention is all you need.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~30. Curran Associates, Inc., 2017.
+
+\end{thebibliography}

@@ -1,0 +1,326 @@
+%% ----------------------------------------------------------------
+%% Thesis.tex -- MAIN FILE (the one that you compile with LaTeX)
+%% ---------------------------------------------------------------- 
+
+% Set up the document
+\documentclass[a4paper, 11pt, oneside]{uet_thesis}  % Use the "Thesis" style, based on the ECS Thesis style by Steve Gunn
+\graphicspath{{Figures/}}  % Location of the graphics files (set up for graphics to be in PDF format)
+
+% Include any extra LaTeX packages required
+\usepackage[square, numbers, comma, sort&compress]{natbib}  % Use the "Natbib" style for the references in the Bibliography
+
+\usepackage{verbatim}  % Needed for the "comment" environment to make LaTeX comments
+\usepackage{vector}  % Allows "\bvec{}" and "\buvec{}" for "blackboard" style bold vectors in maths
+\usepackage{url}
+
+\usepackage{enumitem}
+\usepackage{booktabs}
+% \usepackage[margin=1in]{geometry}
+\usepackage{caption}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{amsfonts}
+\usepackage{amsmath, amssymb}
+% \usepackage{geometry}
+\usepackage{enumitem}
+% \usepackage{titlesec}
+\usepackage{tikz}
+\usepackage{float}
+
+\usepackage{listings}
+\usepackage{xcolor}  % Optional: for adding colors to the code
+\lstset{ 
+  language=Python, 
+  backgroundcolor=\color{white},   % Background color for the code block
+  basicstyle=\ttfamily\small,      % Font style and size
+  breaklines=true,                 % Line breaks
+  frame=single,                    % Adds a frame around the code
+  keywordstyle=\color{blue},       % Style for keywords
+  commentstyle=\color{green},      % Style for comments
+  stringstyle=\color{red},         % Style for strings
+}
+
+\hypersetup{urlcolor=blue, colorlinks=true}  % Colours hyperlinks in blue, but this can be distracting if there are many links.
+
+% remove the unnecessary spacing before and after the headings/subheadings
+\usepackage[compact]{titlesec}
+\titlespacing{\section}{0pt}{*0}{*0}
+\titlespacing{\subsection}{0pt}{*0}{*0}
+\titlespacing{\subsubsection}{0pt}{*0}{*0}
+
+\setlength{\parskip}{6pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+
+%% ----------------------------------------------------------------
+\begin{document}
+\frontmatter	  % Begin Roman style (i, ii, iii, iv...) page numbering
+
+% Set up the Title Page
+\title  {SMART-SBERT with SimCSE: A Robust Defense Against Catastrophic Forgetting in BERT}
+%\session {2006 -- 2010}
+\advisor {Dr. Irfan Ullah Chaudhry}
+\authors {
+Rooshan Khan  ~~~~~~~ 2021-EE-067\\
+Hussnain Amjad ~~~~~ 2021-EE-063\\
+Abdul Samad ~~~~~~~~~ 2021-EE-191\\ 
+Areesha Noor~~~~~~~~~~ 2021-EE-103\\
+}
+
+\addresses  {\deptname \\ \univname}  % Do not change this here, instead these must be set in the "Thesis.cls" file, please look through it instead
+\date       {\today}
+\subject    {}
+\keywords   {}
+
+\maketitle
+%% ----------------------------------------------------------------
+
+\setstretch{1.3}  % It is better to have smaller font and larger line spacing than the other way round
+
+% Define the page headers using the FancyHdr package and set up for one-sided printing
+\fancyhead{}  % Clears all page headers and footers
+\rhead{\thepage}  % Sets the right side header to show the page number
+\lhead{}  % Clears the left side page header
+
+\pagestyle{fancy}  % Finally, use the "fancy" page style to implement the FancyHdr headers
+
+
+%% Select only one of the certification pages  
+%\CertificationMSc{}
+\CertificationBSc{}
+\clearpage  % Certification ended, now start a new page
+
+
+%% ----------------------------------------------------------------
+% Declaration Page required for the Thesis, your institution may give you a different text to place here
+\Declaration{
+%\addtocontents{toc}{\vspace{1em}}  % Add a gap in the Contents, for aesthetics
+
+We declare that the work contained in this thesis is our own, except where explicitly stated otherwise. In addition this work has not been submitted to obtain another degree or professional qualification.
+
+\bigskip
+
+Signed:~~ \rule[0em]{10em}{1.0pt} \\ % This prints a line for the signature 
+Date:~~~~ \rule[0em]{10em}{1.0pt}  % This prints a line to write the date
+}
+\clearpage     % Declaration ended, now start a new page
+
+%% ----------------------------------------------------------------
+
+\setstretch{1.3}  % Reset the line-spacing to 1.3 for body text (if it has changed)
+
+% The Acknowledgements page, for thanking everyone
+\acknowledgements{
+%\addtocontents{toc}{\vspace{1em}}  % Add a gap in the Contents, for aesthetics
+
+We would like to express our heartfelt gratitude to our supervisor, Dr. Irfan Ullah Chaudhry, for his invaluable guidance, continuous support, and encouragement throughout the course of this project.
+
+We are also deeply thankful to Dr. Haroon Babri for his insightful suggestions and constructive feedback, which significantly enhanced our understanding and progress.
+
+Lastly, we extend our sincere appreciation to Mr. Asad Ullah Khan for his consistent assistance and helpful input during the course of this work.
+}
+\clearpage  % End of the Acknowledgements
+
+%% ----------------------------------------------------------------
+
+% Begin the Dedication page
+\setstretch{1.3}  % Return the line spacing back to 1.3
+\pagestyle{empty}  % Page style needs to be empty for this page
+\dedicatory{Dedicated to our parents and teachers, whose unwavering support, guidance, and encouragement have been the foundation of our journey and success.}
+
+\clearpage 	% End of the Dedication
+%% ----------------------------------------------------------------
+
+% Begin the Sustainable Development Goals page
+\setstretch{1.3}  % Return the line spacing back to 1.3
+\pagestyle{plain}  % Page style needs to be empty for this page
+
+\addtotoc{Contribution to Sustainable Development Goals}
+\vspace{0.5in}
+\begin{center}
+	\huge{\bf Contribution to Sustainable Development Goals} 
+	\par
+\end{center}
+
+\vspace{0.5in}
+We believe our thesis, \textbf{``SMART-SBERT with SimCSE: A Robust Defense Against Catastrophic Forgetting in BERT,''} makes an important contribution to the Sustainable Development Goals (SDGs) by advancing Artificial Intelligence (AI) and Natural Language Processing (NLP).
+
+\begin{itemize}
+    \item \textbf{Quality Education} \\
+    Our work helps improve the reliability and flexibility of NLP models like BERT. These better models can power smarter educational tools. For example, by improving sentiment analysis, educational platforms can better understand how students feel and respond to their feedback. Similarly, enhancements in semantic textual similarity can support more accurate automated grading and personalized learning experiences. Ultimately, these advances can help improve learning outcomes and make quality education more accessible.
+
+    \item \textbf{Industry, Innovation and Infrastructure} \\
+    At the heart of our thesis is innovation in AI and NLP. We’ve developed models that reduce catastrophic forgetting while performing well on multiple tasks, including sentiment classification, paraphrase detection, and semantic textual similarity. This helps build more robust and efficient digital systems. Because our models can adapt to new tasks sequentially without growing too large, they are well-suited for real-world industrial applications. We believe these innovations can foster technological progress and economic growth by enabling smarter data processing, automation, and intelligent systems across various industries.
+\end{itemize}
+
+
+\clearpage	% End of the Sustainable Development Goals
+%% ----------------------------------------------------------------
+
+\pagestyle{fancy}  %The page style headers have been "empty" all this time, now use the "fancy" headers as defined before to bring them back
+
+%% ----------------------------------------------------------------
+\lhead{\emph{Contents}}  % Set the left side page header to "Contents"
+\tableofcontents  % Write out the Table of Contents
+
+%% ----------------------------------------------------------------
+\lhead{\emph{List of Figures}}  % Set the left side page header to "List if Figures"
+\listoffigures  % Write out the List of Figures
+
+%% ----------------------------------------------------------------
+\lhead{\emph{List of Tables}}  % Set the left side page header to "List of Tables"
+\listoftables  % Write out the List of Tables
+
+%% ----------------------------------------------------------------
+\setstretch{1.5}  % Set the line spacing to 1.5, this makes the following tables easier to read
+\clearpage  % Start a new page
+\lhead{\emph{Abbreviations}}  % Set the left side page header to "Abbreviations"
+\listofsymbols{lp{14cm}}  % Include a list of Abbreviations (a table of two columns)
+{
+% \textbf{Acronym} & \textbf{W}hat (it) \textbf{S}tands \textbf{F}or \\
+\textbf{NLP} & \textbf{N}atural \textbf{L}anguage \textbf{P}rocessing \\
+\textbf{BERT} & \textbf{B}idirectional \textbf{E}ncoder \textbf{R}epresentations from \textbf{T}ransformers \\
+\textbf{SMART} & \textbf{SM}oothness-inducing \textbf{A}dversarial \textbf{R}egularization and \textbf{BR}egman p\textbf{R}oximal poin\textbf{T} op\textbf{T}imization  \\
+\textbf{SBERT} & \textbf{S}entence-\textbf{BERT} \\
+\textbf{SimCSE} & \textbf{Sim}ple \textbf{C}ontrastive \textbf{S}entence \textbf{E}mbeddings \\
+\textbf{MLM} & \textbf{M}asked \textbf{L}anguage \textbf{M}odel \\
+\textbf{NSP} & \textbf{N}ext \textbf{S}entence \textbf{P}rediction \\
+\textbf{SQuAD} & \textbf{S}tanford \textbf{Q}uestion \textbf{A}nswering \textbf{D}ataset \\
+\textbf{STS} & \textbf{S}emantic \textbf{T}extual \textbf{S}imilarity \\
+\textbf{STS-B} & \textbf{S}emantic \textbf{T}extual \textbf{S}imilarity \textbf{B}enchmark\\
+\textbf{QQP} & \textbf{Q}uora \textbf{Q}uestion \textbf{P}airs \\
+\textbf{SST} & \textbf{S}tanford \textbf{S}entiment \textbf{T}reebank\\
+\textbf{SNLI} & \textbf{S}tanford \textbf{N}atural \textbf{L}anguage \textbf{I}nference\\
+\textbf{FFN} & \textbf{F}eed-\textbf{F}orward \textbf{N}etwork\\
+\textbf{GeLU} & \textbf{G}aussian \textbf{E}rror \textbf{L}inear \textbf{U}nit\\
+\textbf{ReLU} & \textbf{Re}ctified \textbf{L}inear \textbf{U}nit\\
+\textbf{KL} & \textbf{K}ullback-\textbf{L}eibler\\
+\textbf{VBPP} & \textbf{V}anilla \textbf{B}regman \textbf{P}roximal \textbf{P}oint\\
+\textbf{MBPP} & \textbf{M}omentum \textbf{B}regman \textbf{P}roximal \textbf{P}oint\\
+\textbf{SS} & \textbf{S}MART \textbf{S}BERT\\
+\textbf{SSS} & \textbf{S}MART \textbf{S}BERT with \textbf{S}imCSE\\
+
+}
+
+%% ----------------------------------------------------------------
+% The Abstract Page
+\addtotoc{Abstract}  % Add the "Abstract" page entry to the Contents
+\abstract{
+%\addtocontents{toc}{\vspace{1em}}  % Add a gap in the Contents, for aesthetics
+
+
+We aim to build a robust model based on the BERT-base architecture that performs well on three NLP tasks—sentiment classification (SST-5), paraphrase detection (QQP), and semantic textual similarity (STS-B)—by training sequentially across tasks. A core challenge in this setup is \textit{catastrophic forgetting}, where learning a new task can degrade performance on previously learned tasks due to destructive gradient updates.
+
+To mitigate this, we implemented the \textbf{SMART algorithm}, which introduces adversarial regularization to preserve previously acquired knowledge and avoid aggressive parameter updates. This component was implemented by Rooshan Khan. Abdul Samad and Areesha contributed contrastive learning using supervised and unsupervised loss respectively. However, we used the best among these two that is supervised SimCSE loss to maximize cosine similarity between semantically similar sentence pairs and minimize it for dissimilar ones. Hussnain Amjad implemented the SBERT architecture, for task-specific classification and regression heads for QQP and STS-B, respectively.
+
+We got two best models:
+\begin{itemize}
+    \item \textbf{SMART SBERT (SS)}
+    \item \textbf{SMART SBERT with SimCSE (SSS)}
+\end{itemize}
+
+\textbf{SS} performed better on the SST-5 task, while \textbf{SSS} showed superior results on the STS-B task due to the SimCSE loss function being optimized for similarity learning. Both models performed equally well on paraphrase detection. Results are shown below:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|c|}
+\hline
+\textbf{Task} & \textbf{Metric} & \textbf{Score (SS)} \\
+\hline
+Sentiment Classification & Accuracy & 0.537 \\
+                         & F1 Score & 0.528 \\
+\hline
+Paraphrase Detection     & Accuracy & 0.864 \\
+                         & F1 Score & 0.864 \\
+\hline
+Semantic Textual Similarity & Pearson Correlation & 0.819 \\
+\hline
+\textbf{Overall Performance} &  & \textbf{0.770} \\
+\hline
+\end{tabular}
+\end{table}
+
+\[
+\text{Overall performance (SS)} = \frac{\left( \frac{0.819 + 1}{2} + 0.537 + 0.864 \right)}{3} = 0.770
+\]
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|c|}
+\hline
+\textbf{Task} & \textbf{Metric} & \textbf{Score (SSS)} \\
+\hline
+Sentiment Classification & Accuracy & 0.507 \\
+                         & F1 Score & 0.494 \\
+\hline
+Paraphrase Detection     & Accuracy & 0.864 \\
+                         & F1 Score & 0.863 \\
+\hline
+Semantic Textual Similarity & Pearson Correlation & 0.843 \\
+\hline
+\textbf{Overall Performance} &  & \textbf{0.764} \\
+\hline
+\end{tabular}
+\end{table}
+
+\[
+\text{Overall performance (SSS)} = \frac{\left( \frac{0.843 + 1}{2} + 0.507 + 0.864 \right)}{3} = 0.764
+\]
+
+Depending on task priority, either SS or SSS may be selected. Our results show that a combination of SMART regularization and contrastive learning can effectively reduce catastrophic forgetting and achieve strong performance across all three tasks in a sequential training setup.
+
+
+}
+\clearpage  % Abstract ended, start a new page
+
+%% ----------------------------------------------------------------
+\mainmatter	  % Begin normal, numeric (1,2,3...) page numbering
+\pagestyle{fancy}  % Return the page headers back to the "fancy" style
+\onehalfspacing
+% Include the chapters of the thesis, as separate files
+% Just uncomment the lines as you write the chapters
+
+\input{./Chapters/Chapter1} % Introduction 
+
+\input{./Chapters/Chapter2} % What to Write 
+
+\input{./Chapters/Chapter3}  
+
+\input{./Chapters/Chapter4}
+
+\input{./Chapters/Chapter5}
+
+%\input{./Chapters/Chapter5} % Experiment 2
+
+%\input{./Chapters/Chapter6} % Results and Discussion
+
+%\input{./Chapters/Chapter7} % Conclusion
+
+%% ----------------------------------------------------------------
+% Now begin the Appendices, including them as separate files
+
+\addtocontents{toc}{\vspace{2em}} % Add a gap in the Contents, for aesthetics
+
+\appendix % Cue to tell LaTeX that the following 'chapters' are Appendices
+
+\input{./Chapters/AppendixA}	% Appendix Title
+
+\input{./Chapters/AppendixB} % Appendix Title
+
+\input{./Chapters/AppendixC} % Appendix Title
+
+\addtocontents{toc}{\vspace{2em}}  % Add a gap in the Contents, for aesthetics
+\backmatter
+
+%% ----------------------------------------------------------------
+\label{References}
+\lhead{\emph{References}}  % Change the left side page header to "References"
+
+\bibliographystyle{plainnat}  % Use "unsrtnat" BibTeX style for formatting the references
+
+\bibliography{references}  % The references information are stored in the file named "references.bib"
+
+\end{document}  % The End
+%% ----------------------------------------------------------------

@@ -1,0 +1,99 @@
+\documentclass[12pt]{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{lipsum} % Optional, for placeholder text
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{graphicx}   % For \includegraphics
+\usepackage{amsmath}    % For math symbols
+\usepackage{amssymb}    % For more symbols
+\usepackage{caption}
+
+\title{
+    \textbf{SMART-SBERT with SimCSE:}\\
+    \textbf{A Robust Defense Against Catastrophic Forgetting in BERT}
+}
+
+\author{
+    \textbf{Submitted by:} \\
+    Rooshan Khan \hfill 2021-EE-067 \\
+    Hussnain Amjad \hfill 2021-EE-063 \\
+    Abdul Samad \hfill 2021-EE-191 \\
+    Areesha Noor \hfill 2021-EE-103 \\
+    \\
+    \textbf{Supervised by:} \\
+    Dr. Irfan Ullah Chaudhry
+}
+
+\date{}
+
+\begin{document}
+\maketitle
+\onehalfspacing
+
+\section*{Abstract}
+% Abstract will be added here later
+We aim to build a robust model based on the BERT-base architecture that performs well on three NLP tasks—sentiment classification (SST-5), paraphrase detection (QQP), and semantic textual similarity (STS-B)—by training sequentially across tasks. A core challenge in this setup is \textit{catastrophic forgetting}, where learning a new task can degrade performance on previously learned tasks due to destructive gradient updates.
+
+To mitigate this, we implemented the \textbf{SMART algorithm}, which introduces adversarial regularization to preserve previously acquired knowledge and avoid aggressive parameter updates. This component was implemented by Rooshan Khan. Abdul Samad and Areesha contributed contrastive learning using supervised and unsupervised loss respectively. However, we used the best among these two that is supervised SimCSE loss to maximize cosine similarity between semantically similar sentence pairs and minimize it for dissimilar ones. Hussnain Amjad implemented the SBERT architecture, for task-specific classification and regression heads for QQP and STS-B, respectively.
+
+We got two best models:
+\begin{itemize}
+    \item \textbf{SMART SBERT (SS)}
+    \item \textbf{SMART SBERT with SimCSE (SSS)}
+\end{itemize}
+
+\textbf{SS} performed better on the SST-5 task, while \textbf{SSS} showed superior results on the STS-B task due to the SimCSE loss function being optimized for similarity learning. Both models performed equally well on paraphrase detection. Results are shown below:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|c|}
+\hline
+\textbf{Task} & \textbf{Metric} & \textbf{Score (SS)} \\
+\hline
+Sentiment Classification & Accuracy & 0.537 \\
+                         & F1 Score & 0.528 \\
+\hline
+Paraphrase Detection     & Accuracy & 0.864 \\
+                         & F1 Score & 0.864 \\
+\hline
+Semantic Textual Similarity & Pearson Correlation & 0.819 \\
+\hline
+\textbf{Overall Performance} &  & \textbf{0.770} \\
+\hline
+\end{tabular}
+\end{table}
+
+\[
+\text{Overall performance (SS)} = \frac{\left( \frac{0.819 + 1}{2} + 0.537 + 0.864 \right)}{3} = 0.770
+\]
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|c|}
+\hline
+\textbf{Task} & \textbf{Metric} & \textbf{Score (SSS)} \\
+\hline
+Sentiment Classification & Accuracy & 0.507 \\
+                         & F1 Score & 0.494 \\
+\hline
+Paraphrase Detection     & Accuracy & 0.864 \\
+                         & F1 Score & 0.863 \\
+\hline
+Semantic Textual Similarity & Pearson Correlation & 0.843 \\
+\hline
+\textbf{Overall Performance} &  & \textbf{0.764} \\
+\hline
+\end{tabular}
+\end{table}
+
+\[
+\text{Overall performance (SSS)} = \frac{\left( \frac{0.843 + 1}{2} + 0.507 + 0.864 \right)}{3} = 0.764
+\]
+
+Depending on task priority, either SS or SSS may be selected. Our results show that a combination of SMART regularization and contrastive learning can effectively reduce catastrophic forgetting and achieve strong performance across all three tasks in a sequential training setup.
+
+
+\end{document}
+
