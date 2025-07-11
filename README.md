@@ -18,7 +18,7 @@ We propose a robust fine-tuning framework that integrates the following componen
 - **Smoothness-Inducing Adversarial Regularization:** Enhances model robustness by training it to resist small perturbations in the input space.
 - **Bregman Proximal Point Optimization:** Prevents large and unstable parameter updates during fine-tuning, ensuring smoother convergence and reducing overfitting.
 - **Contrastive Learning:** Enhances sentence representations by pulling embeddings of semantically related sentence pairs closer together, while pushing apart those of unrelated pairs within the embedding space.
-- We also adopt the **Siamese Sentence-BERT (SBERT) Architecture** to create meaningful sentence embeddings that capture semantic similarity, enabling efficient comparison of sentence pairs.
+- We also adopt the **Siamese Sentence-BERT (SBERT) Architecture** to create meaningful sentence embeddings that capture semantic similarity, enabling efficient comparison of sentence pairs.
 ---
 
 ## 👥 Authors
